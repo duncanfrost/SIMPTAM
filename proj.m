@@ -134,12 +134,6 @@ PTAM.storage = [];
 PTAM.kfcount = 0;
 PTAM.noise = 1;
 PTAM.run = true;
-
-
-
-
-
-
 setappdata(handles.figure1,'world',World);
 setappdata(handles.figure1,'ptam',PTAM);
 
