@@ -22,7 +22,7 @@ function varargout = proj(varargin)
 
 % Edit the above text to modify the response to help proj
 
-% Last Modified by GUIDE v2.5 06-Aug-2013 13:51:26
+% Last Modified by GUIDE v2.5 06-Aug-2013 1 3:51:26
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -70,9 +70,9 @@ set(handles.checkbox_runptam, 'Value',1);
 
 Path.dtheta = 2*pi/20;
 Path.time = 0;
-Path.type = 'straight';
-% Path.type = 'tangentcircle';
-Path.radius = 0;
+% Path.type = 'straight';
+Path.type = 'tangentcircle';
+Path.radius = 8;
 
 setappdata(handles.figure1,'path',Path);
 
@@ -238,11 +238,14 @@ function pushbutton_path_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-dtheta = getappdata(handles.figure1,'dtheta');
-PTAM = getappdata(handles.figure1,'dtheta');
+
+PTAM = getappdata(handles.figure1,'ptam');
+
+Path = getappdata(handles.figure1,'path');
 
 
-for theta = dtheta:dtheta:(2*pi-dtheta)
+while Path.time < 2*pi;
+    
     PathStep(handles);
     
     if PTAM.run
@@ -253,6 +256,7 @@ for theta = dtheta:dtheta:(2*pi-dtheta)
     
     UpdateTick(handles);
     drawnow;
+    
 end
 
 
@@ -599,7 +603,7 @@ strings{1} = 'Loop Tangent Direction';
 strings{2} = 'Loop Normal Direction';
 strings{3} = 'Passage';
 set(hObject,'String',strings);
-set(hObject,'Value',3);
+set(hObject,'Value',1);
 
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
