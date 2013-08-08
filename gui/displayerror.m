@@ -28,8 +28,10 @@ end
 
 
 [error count] = calculateworlderror(World.Map,PTAM.Map);
+estcount = size(PTAM.Map.points,2);
 set(handles.text_totalmaperror,'String',['Total Map Error: ' num2str(error)]);
-set(handles.text_mappoints,'String',['Number of Map Points: ' num2str(count)]);
+set(handles.text_gtmappoints,'String',['Number of GT Map Points: ' num2str(count)]);
+set(handles.text_estmappoints,'String',['Number of Est Map Points: ' num2str(estcount)]);
 set(handles.text_averagemaperror,'String',['Average Map Error: ' num2str(error/count)]);
 
 

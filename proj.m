@@ -22,7 +22,7 @@ function varargout = proj(varargin)
 
 % Edit the above text to modify the response to help proj
 
-% Last Modified by GUIDE v2.5 06-Aug-2013 1 3:51:26
+% Last Modified by GUIDE v2.5 07-Aug-2013 18:49:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -52,6 +52,7 @@ function proj_OpeningFcn(hObject, eventdata, handles, varargin)
 % handles    structure with handles and user data (see GUIDATA)
 % varargin   command line arguments to proj (see VARARGIN)
 clc;
+
 addpath('gui');
 addpath('geometry');
 addpath('processing');
@@ -63,7 +64,8 @@ addpath('posegraph');
 addpath('localbundle');
 addpath('abfilter');
 addpath('scale');
-
+addpath('dataassociation');
+addpath('drawing');
 
 set(handles.checkbox_runptam, 'Value',1);
 
@@ -100,7 +102,7 @@ if strcmp(Path.type, 'straight');
     set(handles.viewtopdown,'YLim',[0 100]);
     
 else
-    Map.points = generateworldpoints3(10,2);
+    Map.points = generateworldpoints3(10,3);
     set(handles.viewtopdown,'YLim',[-15 15]);
 end
 
@@ -134,12 +136,9 @@ PTAM.storage = [];
 PTAM.kfcount = 0;
 PTAM.noise = 1;
 PTAM.run = true;
+PTAM.mapcount = 0;
 setappdata(handles.figure1,'world',World);
 setappdata(handles.figure1,'ptam',PTAM);
-
-
-
-
 
 % --- Outputs from this function are returned to the command line.
 function varargout = proj_OutputFcn(hObject, eventdata, handles)
@@ -151,68 +150,55 @@ function varargout = proj_OutputFcn(hObject, eventdata, handles)
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
-
 % --- Executes on button press in pushbutton_w.
 function pushbutton_w_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_w (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-World = getappdata(handles.figure1,'world');
-World.Camera = movecamera(World.Camera,[0 0 1 0]',0,false);
-setappdata(handles.figure1,'world',World);
-UpdateTick(handles);
+ManualMove(handles, [0 0 1 0]', 0);
 
 % --- Executes on button press in pushbutton_d.
 function pushbutton_d_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_d (see GCBOfh = figure('Position',[250 250 350 35)
 % eventdata  reserved - to be defined i4n a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-World = getappdata(handles.figure1,'world');
-World.Camera = movecamera(World.Camera,[1 0 0 0]',0,false);
-setappdata(handles.figure1,'world',World);
-UpdateTick(handles);
-
+ManualMove(handles, [1 0 0 0]', 0);
 
 % --- Executes on button press in pushbutton_s.
 function pushbutton_s_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_s (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-World = getappdata(handles.figure1,'world');
-World.Camera = movecamera(World.Camera,[0 0 -1 0]',0,false);
-setappdata(handles.figure1,'world',World);
-UpdateTick(handles);
+ManualMove(handles, [0 0 -1 0]', 0);
 
 % --- Executes on button press in pushbutton_a.
 function pushbutton_a_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_a (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-World = getappdata(handles.figure1,'world');
-World.Camera = movecamera(World.Camera,[-1 0 0 0]',0,false);
-setappdata(handles.figure1,'world',World);
-UpdateTick(handles);
-
+ManualMove(handles, [-1 0 0 0]', 0);
 
 % --- Executes on button press in pushbutton_right.
 function pushbutton_right_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_right (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handes and user data (see GUIDATA)
-World = getappdata(handles.figure1,'world');
-World.Camera = movecamera(World.Camera,[],0.1,false);
-setappdata(handles.figure1,'world',World);
-UpdateTick(handles);
+ManualMove(handles, [], 0.1);
 
 % --- Executes on button press in pucamerashbutton_left.
 function pushbutton_left_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_left (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles anmydata = guidata(hObject);d user data (see GUIDATA)
+ManualMove(handles, [], -0.1);
+
+function ManualMove(handles, translation, angle)
 World = getappdata(handles.figure1,'world');
-World.Camera = movecamera(World.Camera,[],-0.1,false);
+World.Camera = movecamera(World.Camera,translation,angle,false);
 setappdata(handles.figure1,'world',World);
 UpdateTick(handles);
+
+
 
 function DisplayFrame(handles , AxesHandle)
 cla(AxesHandle);
@@ -223,8 +209,8 @@ World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
 
 
-CurrFrame_World.ImagePoints = makeimage(World.Camera, World.Map,0);
-CurrFrame_PTAM.ImagePoints = makeimage(World.Camera, PTAM.Map,0);
+CurrFrame_World.ImagePoints = makeimage(World.Camera, World.Map,0,false);
+CurrFrame_PTAM.ImagePoints = makeimage(World.Camera, PTAM.Map,0,false);
 
 
 displayimage(CurrFrame_World.ImagePoints,[1 0 0]);
@@ -245,7 +231,7 @@ Path = getappdata(handles.figure1,'path');
 
 
 while Path.time < 2*pi;
-    
+    Path = getappdata(handles.figure1,'path');
     PathStep(handles);
     
     if PTAM.run
@@ -301,7 +287,12 @@ World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
 
 
-CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,PTAM.noise);
+CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,PTAM.noise,false);
+
+CurrFrame = associatekeyframes(PTAM.KeyFrames(PTAM.kfcount),CurrFrame);
+
+
+
 
 PTAM.CurrFrame = CurrFrame;
 
@@ -348,23 +339,35 @@ World = getappdata(handles.figure1,'world');
 PTAM.kfcount = PTAM.kfcount + 1;
 PTAM.KeyFrames(PTAM.kfcount) = PTAM.CurrFrame;
 
-CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,0);
+CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,0,false);
 CurrFrame.Camera = World.Camera;
 World.KeyFrames(PTAM.kfcount) = CurrFrame;
 
 % Add some world points from this keyframe
 KeyFrame1 = PTAM.KeyFrames(PTAM.kfcount);
-kf1position = camcentre(KeyFrame1.Camera.E);
-KeyFrame2 =  findclosestkeyframe(PTAM.KeyFrames,kf1position);
-outpoints = reproject(KeyFrame1, KeyFrame2);
+% kf1position = camcentre(KeyFrame1.Camera.E);
+% [KeyFrame2 index] =  findclosestkeyframe(PTAM.KeyFrames,kf1position);
+KeyFrame2 = PTAM.KeyFrames(PTAM.kfcount-1);
 
-origsize = size(outpoints,2);
-origmapsize = size(PTAM.Map.points,2);
-PTAM.Map = appendmap(PTAM.Map,outpoints);
-newmapsize = size(PTAM.Map.points,2);
-pointsadded = newmapsize-origmapsize;
 
-display([int2str(pointsadded) ' points added out of ' int2str(origsize)]);
+if ~isempty(KeyFrame2)
+    [m1 m2] = findunassmatches(KeyFrame1, KeyFrame2);
+    
+    [KeyFrame1, KeyFrame2, PTAM, World ] = reprojectselective(KeyFrame1, KeyFrame2,m1,m2, PTAM, World);
+    
+    
+    PTAM.KeyFrames(PTAM.kfcount) = KeyFrame1;
+    PTAM.KeyFrames(PTAM.kfcount-1) = KeyFrame2;
+
+
+    
+
+    
+    pointsadded = size(m1,2);
+
+    display([int2str(pointsadded) ' points added']);
+end
+
 setappdata(handles.figure1,'ptam',PTAM);
 setappdata(handles.figure1,'world',World);
 
@@ -401,6 +404,7 @@ function pushbutton_bundle_Callback(hObject, eventdata, handles)
 PTAM = getappdata(handles.figure1,'ptam');
 World = getappdata(handles.figure1,'world');
 PTAM = bundleadjust(PTAM,World);
+PTAM.Camera = PTAM.KeyFrames(PTAM.kfcount).Camera;
 setappdata(handles.figure1,'ptam',PTAM);
 UpdateTick(handles);
 
@@ -416,22 +420,37 @@ function SimpleInit(handles)
 World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
 
-CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,0);
+CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,0,false);
 CurrFrame.Camera = World.Camera;
 
+% plotkeyframe(CurrFrame);
 
 
-[X , ~, ids] = findmapkeyframematches(World.Map, CurrFrame,0,false);
-for i = 1:size(X,2)
-    PTAM.Map.points(i).location = X(:,i);
-    PTAM.Map.points(i).id = ids(i);
+for i = 1:size(CurrFrame.ImagePoints,2)
+    PTAM.mapcount = PTAM.mapcount + 1;
+    CurrFrame.ImagePoints(i).id = PTAM.mapcount;
+    gtid = CurrFrame.ImagePoints(i).gtid;
+    gtlocation = World.Map.points(gtid).location;
+    
+    PTAM.Map.points(PTAM.mapcount).location = gtlocation;
+    PTAM.Map.points(PTAM.mapcount).gtid = gtid;
+    PTAM.Map.points(PTAM.mapcount).id = PTAM.mapcount;
+    
+    World.Map.points(gtid).estids = [World.Map.points(gtid).estids PTAM.mapcount];
+    
+    
 end
+
+
+% plotkeyframe(CurrFrame);
+
+
 
 PTAM.Camera = World.Camera;
 
 World.KeyFrames(1) = CurrFrame;
 
-PTAM.KeyFrames(1).ImagePoints = makeimage(World.Camera, World.Map,PTAM.noise);
+PTAM.KeyFrames(1).ImagePoints = CurrFrame.ImagePoints;
 PTAM.KeyFrames(1).Camera = World.Camera;
 
 PTAM.kfcount = 1;
@@ -448,8 +467,8 @@ function pushbutton_save_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
-theta = getappdata(handles.figure1,'theta');
-save DATA World PTAM theta
+Path = getappdata(handles.figure1,'path');
+save DATA World PTAM Path
 
 
 % --- Executes on button press in pushbutton_load.
@@ -460,7 +479,7 @@ function pushbutton_load_Callback(hObject, eventdata, handles)
 load DATA
 setappdata(handles.figure1,'world',World);
 setappdata(handles.figure1,'ptam',PTAM);
-setappdata(handles.figure1,'theta',theta);
+setappdata(handles.figure1,'path',Path);
 UpdateTick(handles);
 
 
@@ -629,3 +648,45 @@ end
 
 setappdata(handles.figure1,'ptam',PTAM);
 
+
+% --- Executes on button press in pushbutton_closeloop.
+function pushbutton_closeloop_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_closeloop (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+World = getappdata(handles.figure1,'world');
+PTAM = getappdata(handles.figure1,'ptam');
+outPTAM = closeloop(PTAM, World);
+setappdata(handles.figure1,'ptam',outPTAM);
+UpdateTick(handles);
+
+% --- Executes on button press in pushbutton_kfdisplay.
+function pushbutton_kfdisplay_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_kfdisplay (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+PTAM = getappdata(handles.figure1,'ptam');
+plotkeyframe(PTAM.KeyFrames(PTAM.kfcount));
+plotkeyframe(PTAM.KeyFrames(PTAM.kfcount-1));
+
+
+% --- Executes on button press in pushbutton_settogt.
+function pushbutton_settogt_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_settogt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+World = getappdata(handles.figure1,'world');
+PTAM = getappdata(handles.figure1,'ptam');
+outPTAM = settogt(PTAM, World);
+setappdata(handles.figure1,'ptam',outPTAM);
+UpdateTick(handles);
+
+
+% --- Executes on button press in pushbutton_checkids.
+function pushbutton_checkids_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_checkids (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+PTAM = getappdata(handles.figure1,'ptam');
+checkforemptyids(PTAM);

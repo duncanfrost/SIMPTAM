@@ -89,15 +89,5 @@ outPTAM = PTAM;
 end
 
 
-function map = generateidmap(KeyFrame)
-
-map = ones(500,1)*-1;
-for i = 1:size(KeyFrame.ImagePoints,2)
-    map(KeyFrame.ImagePoints(i).id) = i;
-end
-
-% map = -1*(map==0) + map;
-end
-
 
 

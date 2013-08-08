@@ -1,4 +1,4 @@
-function [ ClosestKeyFrame ] = findclosestkeyframe(KeyFrames, position)
+function [ ClosestKeyFrame minkfcount ] = findclosestkeyframe(KeyFrames, position)
 %FINDCLOSESTKEYFRAME Finds the closest keyframe to a specified point 
 
 
@@ -25,8 +25,11 @@ end
 
 display('Cloest keyframe:');
 display(minkfcount);
-ClosestKeyFrame = KeyFrames(minkfcount);
-
+if minkfcount > 0
+    ClosestKeyFrame = KeyFrames(minkfcount);
+else
+    ClosestKeyFrame = [];
+end
 
 end
 
