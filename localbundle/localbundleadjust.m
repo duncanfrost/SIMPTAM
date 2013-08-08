@@ -26,14 +26,14 @@ for i = 1:ncameras
 end
 
 
-if size(PTAM.KeyFrames,2) < 4
+if size(PTAM.KeyFrames,2) < 2
     outPTAM = PTAM;
     return;
 else
-    if size(PTAM.KeyFrames,2) < 12
-        range = fliplr(size(PTAM.KeyFrames,2):3);
+    if size(PTAM.KeyFrames,2) < nkeyframes + 2
+        range = 3:size(PTAM.KeyFrames,2);
     else
-        range =  fliplr(size(PTAM.KeyFrames,2):size(PTAM.KeyFrames,2)-10);
+        range =  size(PTAM.KeyFrames,2)-(nkeyframes-1):size(PTAM.KeyFrames,2);
     end
 end
 
@@ -46,7 +46,7 @@ LocalKeyFrames = PTAM.KeyFrames(range);
 
 
   
-
+counts = kfidhist(PTAM.KeyFrames,ids);
 
 
 
@@ -59,9 +59,10 @@ while iter < niter
     
    
     %Calculate residuals and jacobian
-    [r, J] = localcalculateresiduals(PTAM, range, PTAM.Map,map,true,ids);
-   
-
+    tic
+    [r, J] = localcalculateresiduals(PTAM, range, counts, map,true,ids);
+    toc
+    
 
     error = r'*r;
     left = J'*J + lambda*diag(diag(J'*J));
@@ -78,7 +79,7 @@ while iter < niter
     
     newPTAM = localapplyparam(PTAM, range,ids, param);
 
-    [nr] = localcalculateresiduals(newPTAM, range, newPTAM.Map,map,true,ids);
+    [nr] = localcalculateresiduals(newPTAM, range, counts,map,true,ids);
     
     
     nerror = nr'*nr;
@@ -91,6 +92,7 @@ while iter < niter
     display(iter);
     display(norm(param));
     display(lambda);
+
 
     
     if nerror < error

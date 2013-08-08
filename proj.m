@@ -542,7 +542,7 @@ World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
 
 
-outPTAM = localbundleadjust(PTAM, World);
+outPTAM = localbundleadjust(PTAM, World,5);
 PTAM = outPTAM;
 setappdata(handles.figure1,'ptam',PTAM);
 UpdateTick(handles);

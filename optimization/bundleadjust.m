@@ -35,8 +35,9 @@ while iter < niter
     
    
     %Calculate residuals and jacobian
+    res_start = tic;
     [r, J] = calculateresiduals(PTAM.KeyFrames, PTAM.Map,map,true);
-   
+   res_end = toc(res_start);
 
 
     error = r'*r;
@@ -68,6 +69,7 @@ while iter < niter
     display(iter);
     display(norm(param));
     display(lambda);
+    display(res_end);
 
     
     if rerror < error

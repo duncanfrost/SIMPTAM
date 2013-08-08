@@ -1,4 +1,4 @@
-function [r, J] = localcalculateresiduals(PTAM, range, Map, map,calcJ,ids)
+function [r, J] = localcalculateresiduals(PTAM, range, counts, map,calcJ,ids)
 %CALCULATERESIDUALS Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -7,7 +7,7 @@ function [r, J] = localcalculateresiduals(PTAM, range, Map, map,calcJ,ids)
 
 
 
-counts = kfidhist(PTAM.KeyFrames,ids);
+
 nresi = 2*round(sum(counts));
 npoints = size(ids,1);
 nparam = 3*npoints + 6*size(range,2);
@@ -29,14 +29,22 @@ for i = 1:npoints
     for j = 1:size(PTAM.KeyFrames,2)
          
         E = PTAM.KeyFrames(j).Camera.E;
-        if ~isempty(imagepointinkf(PTAM.KeyFrames(j),ids(i)))
+        pointIndex = map{j}(ids(i));
+        imagePoint = [];
+        if pointIndex > 0
+            imagePoint = PTAM.KeyFrames(j).ImagePoints(pointIndex).location;
+        end
+        
+        
+        
+        if ~isempty(imagePoint)  
             row = row + 2;
-            imagepoint = imagepointinkf(PTAM.KeyFrames(j),ids(i));
-            imagePoint = imagepoint.location;
             
             
-            mapPointIndex = findmappointid(Map,ids(i)); 
-            mapPoint = Map.points(mapPointIndex);
+            
+            
+            
+            mapPoint = PTAM.Map.points(ids(i));
             
             pointCamera = E*mapPoint.location;
             X = pointCamera(1);

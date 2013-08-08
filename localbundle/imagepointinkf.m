@@ -1,4 +1,4 @@
-function [ out ] = imagepointinkf(KeyFrame,id)
+function [ out i] = imagepointinkf(KeyFrame,id)
 
 for i = 1:size(KeyFrame.ImagePoints,2);
     if KeyFrame.ImagePoints(i).id == id
