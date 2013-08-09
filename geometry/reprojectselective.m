@@ -33,7 +33,7 @@ for i = 1:size(m1,2)
     
     KeyFrame2.ImagePoints(index2).id = PTAM.mapcount;
     
-    display([gtid gtid2; index1 index2]);
+%     display([gtid gtid2; index1 index2]);
        
     World.Map.points(gtid).estids = [World.Map.points(gtid).estids PTAM.mapcount];
     
