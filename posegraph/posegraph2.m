@@ -10,7 +10,7 @@ ncameras = size(PTAM.KeyFrames,2);
 dp = 0.01;
 iter = 1;
 niter = 500;
-lambda = 0.0000001;
+lambda = 0.000000001;
 
 
 for i = 1:ncameras
@@ -71,7 +71,7 @@ while iter < niter
     
     if nerror < error
         PTAM = PTAM2;
-        if lambda > 1e-15
+        if lambda > 1e-30
             lambda = lambda * (1-0.1);
         end
     else

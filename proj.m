@@ -350,7 +350,6 @@ for i = 1:size(CurrFrame.ImagePoints,2)
     
     World.Map.points(gtid).estids = [World.Map.points(gtid).estids PTAM.mapcount];
     
-    
 end
 
 PTAM.Camera = World.Camera;
@@ -419,7 +418,7 @@ for i = 1:size(PTAM.KeyFrames,2)
         Ext{i} = PTAM.KeyFrames(j).Camera.E/PTAM.KeyFrames(i).Camera.E;
     end
     
-    Ext{i} = ExtGT{i};
+%     Ext{i} = ExtGT{i};
     
 end
 setappdata(handles.figure1,'ext',Ext);
