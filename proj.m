@@ -22,7 +22,7 @@ function varargout = proj(varargin)
 
 % Edit the above text to modify the response to help proj
 
-% Last Modified by GUIDE v2.5 07-Aug-2013 18:49:09
+% Last Modified by GUIDE v2.5 09-Aug-2013 15:14:12
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -70,7 +70,7 @@ addpath('drawing');
 set(handles.checkbox_runptam, 'Value',1);
 
 
-Path.dtheta = 2*pi/20;
+Path.dtheta = 2*pi/10;
 Path.time = 0;
 % Path.type = 'straight';
 Path.type = 'tangentcircle';
@@ -237,6 +237,7 @@ while Path.time < 2*pi;
     if PTAM.run
         EstimateCamera(handles);
         AddKeyFrame(handles);
+%         RunLocalBA(handles);
     end
     
     
@@ -358,7 +359,7 @@ if ~isempty(KeyFrame2)
     
     PTAM.KeyFrames(PTAM.kfcount) = KeyFrame1;
     PTAM.KeyFrames(PTAM.kfcount-1) = KeyFrame2;
-
+    
 
     
 
@@ -383,6 +384,7 @@ PathStep(handles);
 if PTAM.run
     EstimateCamera(handles);
     AddKeyFrame(handles);
+%     RunLocalBA(handles);
 end
 
 UpdateTick(handles);
@@ -538,14 +540,7 @@ function pushbutton_localba_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_localba (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-World = getappdata(handles.figure1,'world');
-PTAM = getappdata(handles.figure1,'ptam');
-
-
-outPTAM = localbundleadjust(PTAM, World,5);
-PTAM = outPTAM;
-setappdata(handles.figure1,'ptam',PTAM);
-UpdateTick(handles);
+RunLocalBA(handles)
 
 
 % --- Executes on button press in pushbutton_scale.
@@ -656,8 +651,9 @@ function pushbutton_closeloop_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
-outPTAM = closeloop(PTAM, World);
-setappdata(handles.figure1,'ptam',outPTAM);
+[PTAM World] = closeloop(PTAM, World);
+setappdata(handles.figure1,'ptam',PTAM);
+setappdata(handles.figure1,'world',World);
 UpdateTick(handles);
 
 % --- Executes on button press in pushbutton_kfdisplay.
@@ -690,3 +686,12 @@ function pushbutton_checkids_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 PTAM = getappdata(handles.figure1,'ptam');
 checkforemptyids(PTAM);
+
+
+function RunLocalBA(handles)
+World = getappdata(handles.figure1,'world');
+PTAM = getappdata(handles.figure1,'ptam');
+outPTAM = localbundleadjust(PTAM, World,4);
+PTAM = outPTAM;
+setappdata(handles.figure1,'ptam',PTAM);
+UpdateTick(handles);

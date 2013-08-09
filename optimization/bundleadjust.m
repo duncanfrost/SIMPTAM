@@ -19,7 +19,7 @@ dp = 1;
 niter = 5;
 iter = 0;
 
-lambda = 0.00000018;
+lambda = 0.00000000001;
 
 for i = 1:ncameras
     map{i} = generateidmap(PTAM.KeyFrames(i));
@@ -37,7 +37,7 @@ while iter < niter
     %Calculate residuals and jacobian
     res_start = tic;
     [r, J] = calculateresiduals(PTAM.KeyFrames, PTAM.Map,map,true);
-   res_end = toc(res_start);
+    res_end = toc(res_start);
 
 
     error = r'*r;

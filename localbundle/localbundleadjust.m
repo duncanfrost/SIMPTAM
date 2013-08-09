@@ -16,7 +16,7 @@ npoints = size(PTAM.Map.points,2);
 
 
 dp = 1;
-niter = 5;
+niter = 10;
 iter = 0;
 
 lambda = 0.002;

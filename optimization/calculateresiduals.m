@@ -23,14 +23,9 @@ for i = 1:ncameras
         row = row + 2;
         id = Map.points(j).id;
         pointIndex = map{i}(id);
-        imagePoint = [];
         if pointIndex > 0
-            imagePoint = KeyFrames(i).ImagePoints(pointIndex).location;
-        end
+        imagePoint = KeyFrames(i).ImagePoints(pointIndex).location;
         
-
-
-        if ~isempty(imagePoint)        
             pointCamera = E*Map.points(j).location;
             X = pointCamera(1);
             Y = pointCamera(2);

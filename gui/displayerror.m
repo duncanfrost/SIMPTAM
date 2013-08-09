@@ -28,6 +28,18 @@ end
 
 
 [error count] = calculateworlderror(World.Map,PTAM.Map);
+
+hist1 = [];
+hist2 = [];
+for i = 1:size(PTAM.Map.points,2)
+    hist1 = [hist1  PTAM.Map.points(i).id];
+end
+
+for i = 1:size(World.Map.points,2)
+    hist2 = [hist2  World.Map.points(i).id];
+end
+
+
 estcount = size(PTAM.Map.points,2);
 set(handles.text_totalmaperror,'String',['Total Map Error: ' num2str(error)]);
 set(handles.text_gtmappoints,'String',['Number of GT Map Points: ' num2str(count)]);

@@ -1,24 +1,32 @@
-function [PTAM] = closeloop(PTAM, World)
+function [PTAM World] = closeloop(PTAM, World)
 
 
-%Correct keyframe measurement ids
-for i = size(PTAM.KeyFrames,2)
-    for j = 1:size(PTAM.KeyFrames(i).ImagePoints,2)
-        gtid = PTAM.KeyFrames(i).ImagePoints(j).gtid;
-        newid = World.Map.points(gtid).estids(1);
-        if newid <= size(World.Map.points,2)
-            PTAM.KeyFrames(i).ImagePoints(j).id = newid;
-        else
-            display('problem');
+for i = 1:size(World.Map.points,2)
+    id = World.Map.points(i).estids(1);
+    newMap.points(i).id = i;
+    newMap.points(i).location = PTAM.Map.points(id).location;
+    newMap.points(i).gtid = i;
+    World.Map.points(i).estids = i;
+    
+    for j = 1:size(PTAM.KeyFrames,2)
+        for k = 1:size(PTAM.KeyFrames(j).ImagePoints,2)
+            gtid = PTAM.KeyFrames(j).ImagePoints(k).gtid;
+            if gtid == i
+                PTAM.KeyFrames(j).ImagePoints(k).id = i;
+            end
         end
-    end
+    end     
 end
 
-gtpointcount = size(World.Map.points,2);
+PTAM.Map = newMap;
+
+gtpointcount = size(PTAM.Map.points,2);
 
 PTAM.Map.points = PTAM.Map.points(1:gtpointcount);
 PTAM.mapcount = gtpointcount;
-    
+
+
+
 
 end
 
