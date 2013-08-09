@@ -136,31 +136,31 @@ setappdata(handles.figure1,'world',World);
 setappdata(handles.figure1,'ptam',PTAM);
 
 % --- Outputs from this function are returned to the command line.
-function varargout = proj_OutputFcn(hObject, eventdata, handles)
+function varargout = proj_OutputFcn(~, ~, handles)
 varargout{1} = handles.output;
 
 % --- Executes on button press in pushbutton_w.
-function pushbutton_w_Callback(hObject, eventdata, handles)
+function pushbutton_w_Callback(~, ~, handles)
 ManualMove(handles, [0 0 1 0]', 0);
 
 % --- Executes on button press in pushbutton_d.
-function pushbutton_d_Callback(hObject, eventdata, handles)
+function pushbutton_d_Callback(~, ~, handles)
 ManualMove(handles, [1 0 0 0]', 0);
 
 % --- Executes on button press in pushbutton_s.
-function pushbutton_s_Callback(hObject, eventdata, handles)
+function pushbutton_s_Callback(~, ~, handles)
 ManualMove(handles, [0 0 -1 0]', 0);
 
 % --- Executes on button press in pushbutton_a.
-function pushbutton_a_Callback(hObject, eventdata, handles)
+function pushbutton_a_Callback(~, ~, handles)
 ManualMove(handles, [-1 0 0 0]', 0);
 
 % --- Executes on button press in pushbutton_right.
-function pushbutton_right_Callback(hObject, eventdata, handles)
+function pushbutton_right_Callback(~, ~, handles)
 ManualMove(handles, [], 0.1);
 
 % --- Executes on button press in pucamerashbutton_left.
-function pushbutton_left_Callback(hObject, eventdata, handles)
+function pushbutton_left_Callback(~, ~, handles)
 ManualMove(handles, [], -0.1);
 
 function ManualMove(handles, translation, angle)
@@ -242,9 +242,6 @@ CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,PTAM.noise,false);
 
 CurrFrame = associatekeyframes(PTAM.KeyFrames(PTAM.kfcount),CurrFrame);
 
-
-
-
 PTAM.CurrFrame = CurrFrame;
 
 display('Estimating pose...');
@@ -266,9 +263,6 @@ function AddKeyFrame(handles)
 PTAM = getappdata(handles.figure1,'ptam');
 World = getappdata(handles.figure1,'world');
 
-
-
-
 PTAM.kfcount = PTAM.kfcount + 1;
 PTAM.KeyFrames(PTAM.kfcount) = PTAM.CurrFrame;
 
@@ -278,8 +272,7 @@ World.KeyFrames(PTAM.kfcount) = CurrFrame;
 
 % Add some world points from this keyframe
 KeyFrame1 = PTAM.KeyFrames(PTAM.kfcount);
-% kf1position = camcentre(KeyFrame1.Camera.E);
-% [KeyFrame2 index] =  findclosestkeyframe(PTAM.KeyFrames,kf1position);
+
 KeyFrame2 = PTAM.KeyFrames(PTAM.kfcount-1);
 
 
@@ -287,7 +280,6 @@ if ~isempty(KeyFrame2)
     [m1 m2] = findunassmatches(KeyFrame1, KeyFrame2);
     
     [KeyFrame1, KeyFrame2, PTAM, World ] = reprojectselective(KeyFrame1, KeyFrame2,m1,m2, PTAM, World);
-    
     
     PTAM.KeyFrames(PTAM.kfcount) = KeyFrame1;
     PTAM.KeyFrames(PTAM.kfcount-1) = KeyFrame2;
@@ -306,7 +298,7 @@ PathStep(handles);
 if PTAM.run
     EstimateCamera(handles);
     AddKeyFrame(handles);
-%     RunLocalBA(handles);
+    RunLocalBA(handles);
 end
 
 UpdateTick(handles);
@@ -530,7 +522,7 @@ checkforemptyids(PTAM);
 function RunLocalBA(handles)
 World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
-outPTAM = localbundleadjust(PTAM, World,4);
+outPTAM = localbundleadjust(PTAM, World,15);
 PTAM = outPTAM;
 setappdata(handles.figure1,'ptam',PTAM);
 UpdateTick(handles);

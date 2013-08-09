@@ -12,6 +12,10 @@ npoints = size(PTAM.Map.points,2);
 
 
 
+
+
+
+
 %Calculate the current error
 
 
@@ -34,6 +38,13 @@ else
         range = 3:size(PTAM.KeyFrames,2);
     else
         range =  size(PTAM.KeyFrames,2)-(nkeyframes-1):size(PTAM.KeyFrames,2);
+        
+        KeyFrame1 = PTAM.KeyFrames(size(PTAM.KeyFrames,2));
+        kf1position = camcentre(KeyFrame1.Camera.E);
+        [KeyFrame2 indices] =  findclosestkeyframe(PTAM.KeyFrames,kf1position,nkeyframes);
+        range = indices;
+        
+        
     end
 end
 
