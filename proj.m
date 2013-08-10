@@ -236,10 +236,12 @@ UpdateTick(handles);
 function error = EstimateCamera(handles)
 World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
+% Frames = getappdata(handles.figure1,'frames');
 
-
-CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,PTAM.noise,false);
-
+load Frames
+% CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,PTAM.noise,false);
+% Frames(PTAM.kfcount + 1).ImagePoints = CurrFrame.ImagePoints;
+CurrFrame.ImagePoints = Frames(PTAM.kfcount + 1).ImagePoints;
 
 CurrFrame = associatekeyframes(PTAM.KeyFrames(PTAM.kfcount),CurrFrame);
 
@@ -250,8 +252,10 @@ PTAM = estimatepose(PTAM);
 PTAM.CurrFrame.Camera = PTAM.Camera;
 display('Done estimating!');
 
+setappdata(handles.figure1,'frames',Frames);
 setappdata(handles.figure1,'ptam',PTAM);
-save KeyFrames PTAM.KeyFrames
+% save Frames Frames;
+
 
 
 
@@ -354,9 +358,12 @@ PTAM.KeyFrames(1).Camera = World.Camera;
 
 PTAM.kfcount = 1;
 
+
+Frames(1) = CurrFrame;
+
 setappdata(handles.figure1,'ptam',PTAM);
 setappdata(handles.figure1,'world',World);
-
+setappdata(handles.figure1,'frames',Frames);
 
 % --- Executes on button press in pushbutton_save.
 function pushbutton_save_Callback(hObject, eventdata, handles)
@@ -529,7 +536,7 @@ function RunScaleAdjustBA(handles)
 World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
 
-PTAM = scalebundleadjust(PTAM, World,2,0);
+PTAM = scalebundleadjust(PTAM, World,2,5);
 
 setappdata(handles.figure1,'ptam',PTAM);
 UpdateTick(handles);
