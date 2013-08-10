@@ -1,4 +1,4 @@
-function [outPTAM ] = correctscale(PTAM, World,cc)
+function [outPTAM ] = correctscale2(PTAM, World,cc)
 
 display('Calculating scale diff');
 
@@ -111,12 +111,12 @@ while iter < niter
                 
                 J(1,3*(i-1)+1) = 2*N(1);
                 J(1,3*(i-1)+2) = 2*N(2);
-                J(1,3*(i-1)+3) = 2*N(2);
+                J(1,3*(i-1)+3) = 2*N(3);
                 
                 
                 J(1,3*(j-1)+1) = -2*N(1);
                 J(1,3*(j-1)+2) = -2*N(2);
-                J(1,3*(j-1)+3) = -2*N(2);
+                J(1,3*(j-1)+3) = -2*N(3);
             end
             
             

@@ -251,7 +251,7 @@ PTAM.CurrFrame.Camera = PTAM.Camera;
 display('Done estimating!');
 
 setappdata(handles.figure1,'ptam',PTAM);
-save KeyFrames PTAM.KeyFrames
+
 
 
 
