@@ -1,4 +1,4 @@
-function [ outPTAM ] = scalebundleadjust(PTAM, World,nkeyframes,nconstraints)
+function [ outPTAM ] = scalebundleadjust(PTAM, World,nkeyframes,nconstraints,Cgt)
 %BUNDLEADJUST Does bundle adustment on the PTAM model.
 
 
@@ -20,7 +20,7 @@ npoints = size(PTAM.Map.points,2);
 
 
 dp = 1;
-niter = 50;
+niter = 200;
 iter = 0;
 
 lambda = 0.002;
@@ -68,23 +68,36 @@ counts = kfidhist(PTAM.KeyFrames,ids);
 
 C = ones(npoints,npoints)*-1;
 
-for i = 1:nconstraints
-    consi = randi([1 npoints]);
-    consj = consi;
-    while consj == consi
-        consj = randi([1 npoints]);
+% for i = 1:nconstraints
+%     consi = randi([1 npoints]);
+%     consj = consi;
+%     while consj == consi
+%         consj = randi([1 npoints]);
+%     end
+% 
+%     if consj < consi
+%         temp = consi;
+%         consi = consj;
+%         consj = temp;
+%     end
+% 
+%     X1 = World.Map.points(gtids(consi)).location;
+%     X2 = World.Map.points(gtids(consj)).location;
+% 
+%     C(consi,consj) = norm(X1 - X2);
+% end
+
+
+for i = 1:size(Cgt,1)-1
+    for j = i+1:size(Cgt,2)
+        
+        if sum(gtids == i)>0 && sum(gtids == j)>0
+            consi = gtids == i;
+            consj = gtids == j;
+            C(consi,consj) = Cgt(i,j);
+        end
+        
     end
-
-    if consj < consi
-        temp = consi;
-        consi = consj;
-        consj = temp;
-    end
-
-    X1 = World.Map.points(gtids(consi)).location;
-    X2 = World.Map.points(gtids(consj)).location;
-
-    C(consi,consj) = norm(X1 - X2);
 end
 
 
@@ -92,7 +105,7 @@ end
 
 
 
-
+nconstraints = sum(sum(C>0));
 
 
 
@@ -113,6 +126,9 @@ while iter < niter
     
     nresi = size(r,1);
     cres = r(nresi-nconstraints+1:nresi);
+    
+    bares =  r(1:nresi-nconstraints);
+    baerror = bares'*bares;
     cerror = cres'*cres;
 
     error = r'*r;
@@ -145,6 +161,8 @@ while iter < niter
     display(lambda);
     display(nconstraints);
     display(cres');
+    display(baerror);
+    display(cerror);
 
 
     

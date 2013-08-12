@@ -22,7 +22,7 @@ function varargout = proj(varargin)
 
 % Edit the above text to modify the response to help proj
 
-% Last Modified by GUIDE v2.5 09-Aug-2013 15:14:12
+% Last Modified by GUIDE v2.5 12-Aug-2013 13:11:15
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -304,7 +304,7 @@ PathStep(handles);
 if PTAM.run
     EstimateCamera(handles);
     AddKeyFrame(handles);
-    RunScaleAdjustBA(handles)
+%     RunScaleAdjustBA(handles);
 end
 
 UpdateTick(handles);
@@ -535,8 +535,35 @@ UpdateTick(handles);
 function RunScaleAdjustBA(handles)
 World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
+load Constraints;
 
-PTAM = scalebundleadjust(PTAM, World,2,5);
+PTAM = scalebundleadjust(PTAM, World,4,2,C);
 
 setappdata(handles.figure1,'ptam',PTAM);
 UpdateTick(handles);
+
+
+% --- Executes on button press in pushbutton_errorhist.
+function pushbutton_errorhist_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_errorhist (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+World = getappdata(handles.figure1,'world');
+PTAM = getappdata(handles.figure1,'ptam');
+[ ~, ~, errors] = calculateworlderror(World.Map, PTAM.Map);
+figure;
+bar(errors);
+
+
+% --- Executes on button press in pushbutton_genconstraint.
+function pushbutton_genconstraint_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_genconstraint (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+World = getappdata(handles.figure1,'world');
+load Frames;
+counts = ones(17,1)*1;
+C = constraintmatrix(Frames, World,counts);
+save Constraints C;
+display('Written constraint matrix');
+

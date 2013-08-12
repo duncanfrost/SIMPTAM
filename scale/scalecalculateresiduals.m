@@ -84,6 +84,8 @@ for i = 1:npoints
 end
 row = row + 1;
 
+lambda = 8;
+
 for i = 1:npoints
        for j = i+1:npoints
            if C(i,j) > 0
@@ -99,17 +101,17 @@ for i = 1:npoints
                 
                 
                 residual = norm(N)^2 - C(i,j)^2;
-                r(row) = residual;
+                r(row) = lambda*residual;
                 
                 
-                J(row,3*(i-1)+1) = 2*N(1);
-                J(row,3*(i-1)+2) = 2*N(2);
-                J(row,3*(i-1)+3) = 2*N(3);
+                J(row,3*(i-1)+1) = 2*lambda*N(1);
+                J(row,3*(i-1)+2) = 2*lambda*N(2);
+                J(row,3*(i-1)+3) = 2*lambda*N(3);
                 
                 
-                J(row,3*(j-1)+1) = -2*N(1);
-                J(row,3*(j-1)+2) = -2*N(2);
-                J(row,3*(j-1)+3) = -2*N(3);
+                J(row,3*(j-1)+1) = -2*lambda*N(1);
+                J(row,3*(j-1)+2) = -2*lambda*N(2);
+                J(row,3*(j-1)+3) = -2*lambda*N(3);
                 
            end
             
