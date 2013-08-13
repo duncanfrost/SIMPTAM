@@ -20,8 +20,8 @@ npoints = size(PTAM.Map.points,2);
 
 
 dp = 1;
-niter = 200;
-iter = 0;
+niter = 50;
+iter = 1;
 
 lambda = 0.002;
 
@@ -42,9 +42,7 @@ else
         KeyFrame1 = PTAM.KeyFrames(size(PTAM.KeyFrames,2));
         kf1position = camcentre(KeyFrame1.Camera.E);
         [KeyFrame2 indices] =  findclosestkeyframe(PTAM.KeyFrames,kf1position,nkeyframes);
-        range = indices;
-        
-        
+        range = indices;        
     end
 end
 
@@ -151,6 +149,12 @@ while iter < niter
     
     nerror = nr'*nr;
     
+    
+%     rescalePTAM = applyrescale(newPTAM,World);
+%     
+%     [nr] = scalecalculateresiduals(newPTAM, range, counts,map,true,ids,C);
+    
+    
 
     clc
     display(error);
@@ -168,9 +172,9 @@ while iter < niter
     
     if nerror < error
         PTAM = newPTAM;
-        lambda = lambda * (1-0.2);
+        lambda = lambda * (1-0.1);
     else
-        lambda = lambda * (1+0.2);
+        lambda = lambda * (1+0.1);
     end
 
 

@@ -61,6 +61,7 @@ addpath('abfilter');
 addpath('scale');
 addpath('dataassociation');
 addpath('drawing');
+addpath('general');
 
 set(handles.checkbox_runptam, 'Value',1);
 
@@ -75,7 +76,7 @@ setappdata(handles.figure1,'path',Path);
 
 
 Init(handles, Path);
-SimpleInit(handles);
+NoisyInit(handles);
 UpdateTick(handles);
 
 
@@ -123,7 +124,8 @@ PTAM.Camera = Camera;
 
 PTAM.Map = [];
 PTAM.Map.points(1).location = [0 0 0 0]';
-PTAM.Map.points(1).id = -1;
+PTAM.Map.points(1).id = 1;
+PTAM.Map.points(1).gtid = [];
 PTAM.velocity = zeros(6,1);
 PTAM.position = zeros(6,1);
 PTAM.iter = 0;
@@ -199,23 +201,12 @@ while PTAM.kfcount < 16
         AddKeyFrame(handles);
         RunScaleAdjustBA(handles);
     end
-    
+
     UpdateTick(handles);
     drawnow;
+
     
 end
-
-
-function PathStep(handles)
-World = getappdata(handles.figure1,'world');
-Path = getappdata(handles.figure1,'path');
-
-Path.time = Path.time + Path.dtheta;
-[dt, angle] = genpath(Path.time, Path.dtheta, Path.radius, Path.type);
-World.Camera = movecamera(World.Camera,dt,angle,true);
-
-setappdata(handles.figure1,'world', World);
-setappdata(handles.figure1,'path', Path);
 
 function UpdateTick(handles)
 World = getappdata(handles.figure1,'world');
@@ -233,69 +224,9 @@ UpdateTick(handles);
 function pushbutton_update_Callback(hObject, eventdata, handles)
 UpdateTick(handles);
 
-function error = EstimateCamera(handles)
-World = getappdata(handles.figure1,'world');
-PTAM = getappdata(handles.figure1,'ptam');
-% Frames = getappdata(handles.figure1,'frames');
-
-load Frames
-% CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,PTAM.noise,false);
-% Frames(PTAM.kfcount + 1).ImagePoints = CurrFrame.ImagePoints;
-CurrFrame.ImagePoints = Frames(PTAM.kfcount + 1).ImagePoints;
-
-CurrFrame = associatekeyframes(PTAM.KeyFrames(PTAM.kfcount),CurrFrame);
-
-PTAM.CurrFrame = CurrFrame;
-
-display('Estimating pose...');
-PTAM = estimatepose(PTAM);
-PTAM.CurrFrame.Camera = PTAM.Camera;
-display('Done estimating!');
-
-setappdata(handles.figure1,'frames',Frames);
-setappdata(handles.figure1,'ptam',PTAM);
-% save Frames Frames;
-
-
-
-
-
 % --- Executes on button press in pushbutton_addkeyframe.
 function pushbutton_addkeyframe_Callback(hObject, eventdata, handles)
 AddKeyFrame(handles);
-
-function AddKeyFrame(handles)
-
-PTAM = getappdata(handles.figure1,'ptam');
-World = getappdata(handles.figure1,'world');
-
-PTAM.kfcount = PTAM.kfcount + 1;
-PTAM.KeyFrames(PTAM.kfcount) = PTAM.CurrFrame;
-
-CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,0,false);
-CurrFrame.Camera = World.Camera;
-World.KeyFrames(PTAM.kfcount) = CurrFrame;
-
-% Add some world points from this keyframe
-KeyFrame1 = PTAM.KeyFrames(PTAM.kfcount);
-
-KeyFrame2 = PTAM.KeyFrames(PTAM.kfcount-1);
-
-
-if ~isempty(KeyFrame2)
-    [m1 m2] = findunassmatches(KeyFrame1, KeyFrame2);
-    
-    [KeyFrame1, KeyFrame2, PTAM, World ] = reprojectselective(KeyFrame1, KeyFrame2,m1,m2, PTAM, World);
-    
-    PTAM.KeyFrames(PTAM.kfcount) = KeyFrame1;
-    PTAM.KeyFrames(PTAM.kfcount-1) = KeyFrame2;
-   
-    pointsadded = size(m1,2);
-    display([int2str(pointsadded) ' points added']);
-end
-
-setappdata(handles.figure1,'ptam',PTAM);
-setappdata(handles.figure1,'world',World);
 
 % --- Executes on button press in pushbutton_pathstep.
 function pushbutton_pathstep_Callback(hObject, eventdata, handles)
@@ -327,43 +258,6 @@ UpdateTick(handles);
 % --- Executes on button press in pushbutton_view3d.
 function pushbutton_view3d_Callback(hObject, eventdata, handles)
 view3d(handles);
-
-
-function SimpleInit(handles)
-World = getappdata(handles.figure1,'world');
-PTAM = getappdata(handles.figure1,'ptam');
-
-CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,0,false);
-CurrFrame.Camera = World.Camera;
-
-for i = 1:size(CurrFrame.ImagePoints,2)
-    PTAM.mapcount = PTAM.mapcount + 1;
-    CurrFrame.ImagePoints(i).id = PTAM.mapcount;
-    gtid = CurrFrame.ImagePoints(i).gtid;
-    gtlocation = World.Map.points(gtid).location;
-    
-    PTAM.Map.points(PTAM.mapcount).location = gtlocation;
-    PTAM.Map.points(PTAM.mapcount).gtid = gtid;
-    PTAM.Map.points(PTAM.mapcount).id = PTAM.mapcount;
-    
-    World.Map.points(gtid).estids = [World.Map.points(gtid).estids PTAM.mapcount];
-    
-end
-
-PTAM.Camera = World.Camera;
-World.KeyFrames(1) = CurrFrame;
-
-PTAM.KeyFrames(1).ImagePoints = CurrFrame.ImagePoints;
-PTAM.KeyFrames(1).Camera = World.Camera;
-
-PTAM.kfcount = 1;
-
-
-Frames(1) = CurrFrame;
-
-setappdata(handles.figure1,'ptam',PTAM);
-setappdata(handles.figure1,'world',World);
-setappdata(handles.figure1,'frames',Frames);
 
 % --- Executes on button press in pushbutton_save.
 function pushbutton_save_Callback(hObject, eventdata, handles)
@@ -536,6 +430,9 @@ function RunScaleAdjustBA(handles)
 World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
 load Constraints;
+
+% ngtpoints = size(World.Map.points,2);
+% C = zeros(ngtpoints,ngtpoints);
 
 PTAM = scalebundleadjust(PTAM, World,4,2,C);
 
