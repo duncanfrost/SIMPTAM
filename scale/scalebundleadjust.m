@@ -30,12 +30,12 @@ for i = 1:ncameras
 end
 
 
-if size(PTAM.KeyFrames,2) <= 2
+if size(PTAM.KeyFrames,2) <= 1
     outPTAM = PTAM;
     return;
 else
     if size(PTAM.KeyFrames,2) < nkeyframes + 2
-        range = 3:size(PTAM.KeyFrames,2);
+        range = 2:size(PTAM.KeyFrames,2);
     else
         range =  size(PTAM.KeyFrames,2)-(nkeyframes-1):size(PTAM.KeyFrames,2);
         

@@ -192,7 +192,7 @@ function pushbutton_path_Callback(~, ~, handles)
 PTAM = getappdata(handles.figure1,'ptam');
 Path = getappdata(handles.figure1,'path');
 
-while PTAM.kfcount < 16
+while PTAM.kfcount < 17
     PTAM = getappdata(handles.figure1,'ptam');
     PathStep(handles);
     
@@ -394,7 +394,7 @@ setappdata(handles.figure1,'ptam',PTAM);
 function pushbutton_closeloop_Callback(~, ~, handles)
 World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
-[PTAM World] = closeloop(PTAM, World);
+[PTAM, World] = closeloop(PTAM, World);
 setappdata(handles.figure1,'ptam',PTAM);
 setappdata(handles.figure1,'world',World);
 UpdateTick(handles);
@@ -430,7 +430,7 @@ function RunLocalScaleAdjustBA(handles)
 World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
 load Constraints;
-
+% 
 % ngtpoints = size(World.Map.points,2);
 % C = zeros(ngtpoints,ngtpoints);
 
