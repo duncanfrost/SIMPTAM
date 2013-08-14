@@ -22,7 +22,7 @@ function varargout = proj(varargin)
 
 % Edit the above text to modify the response to help proj
 
-% Last Modified by GUIDE v2.5 12-Aug-2013 13:11:15
+% Last Modified by GUIDE v2.5 14-Aug-2013 09:38:09
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -199,7 +199,7 @@ while PTAM.kfcount < 16
     if PTAM.run
         EstimateCamera(handles);
         AddKeyFrame(handles);
-        RunScaleAdjustBA(handles);
+        RunLocalScaleAdjustBA(handles);
     end
 
     UpdateTick(handles);
@@ -329,9 +329,9 @@ World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
 measurescale(PTAM, World);
 
-% --- Executes on button press in pushbutton_cscale.
-function pushbutton_cscale_Callback(~, ~, handles)
-RunScaleAdjustBA(handles)
+% --- Executes on button press in pushbutton_localscale.
+function pushbutton_localscale_Callback(~, ~, handles)
+RunLocalScaleAdjustBA(handles)
 
 % --- Executes on selection change in popupmenu_dataset.
 function popupmenu_dataset_Callback(hObject, ~, handles)
@@ -426,7 +426,7 @@ PTAM = outPTAM;
 setappdata(handles.figure1,'ptam',PTAM);
 UpdateTick(handles);
 
-function RunScaleAdjustBA(handles)
+function RunLocalScaleAdjustBA(handles)
 World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
 load Constraints;
@@ -440,16 +440,22 @@ setappdata(handles.figure1,'ptam',PTAM);
 UpdateTick(handles);
 
 
-% --- Executes on button press in pushbutton_errorhist.
-function pushbutton_errorhist_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton_errorhist (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
+
+function RunGlobalScaleAdjustBA(handles)
 World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
-[ ~, ~, errors] = calculateworlderror(World.Map, PTAM.Map);
-figure;
-bar(errors);
+load Constraints;
+
+% ngtpoints = size(World.Map.points,2);
+% C = zeros(ngtpoints,ngtpoints);
+
+kfcount = size(PTAM.KeyFrames,2);
+
+PTAM = scalebundleadjust(PTAM, World,kfcount,2,C);
+
+setappdata(handles.figure1,'ptam',PTAM);
+UpdateTick(handles);
+
 
 
 % --- Executes on button press in pushbutton_genconstraint.
@@ -464,3 +470,11 @@ C = constraintmatrix(Frames, World,counts);
 save Constraints C;
 display('Written constraint matrix');
 
+
+
+% --- Executes on button press in pushbutton_globalscale.
+function pushbutton_globalscale_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_globalscale (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+RunGlobalScaleAdjustBA(handles);
