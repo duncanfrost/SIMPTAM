@@ -84,7 +84,7 @@ for i = 1:npoints
 end
 row = row + 1;
 
-lambda = 0.01;
+lambda = 1;
 
 for i = 1:npoints
        for j = i+1:npoints

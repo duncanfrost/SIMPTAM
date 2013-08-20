@@ -2,7 +2,7 @@ function NoisyInit(handles)
 World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
 
-framestatus = 3; 
+framestatus = 1; 
 
 
 
@@ -22,7 +22,7 @@ if framestatus == 3
     CurrFrame.ImagePoints = Frames(1).ImagePoints;
     
 else
-    CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,PTAM.noise,true);
+    CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,PTAM.noise,false);
 end
 
 

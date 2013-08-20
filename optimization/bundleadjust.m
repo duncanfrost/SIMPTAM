@@ -16,10 +16,10 @@ npoints = size(PTAM.Map.points,2);
 
 
 dp = 1;
-niter = 20;
+niter = 5;
 iter = 0;
 
-lambda = 0.00000000001;
+lambda = 0.0000001;
 
 for i = 1:ncameras
     map{i} = generateidmap(PTAM.KeyFrames(i));
@@ -45,6 +45,9 @@ while iter < niter
     right = J'*r;
     pn = left\right;
     param = -dp*pn;
+    
+    
+    rescount = size(r,1)/2;
 
     
     
@@ -63,6 +66,7 @@ while iter < niter
     
     
     clc
+    display(rescount);
     display(error);
     display(nerror);
     display(rerror);

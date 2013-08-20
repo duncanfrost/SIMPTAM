@@ -1,4 +1,4 @@
-function [ outPTAM ] = scalebundleadjust(PTAM, World,nkeyframes,nconstraints,Cgt)
+function [ outPTAM ] = globalscalebundleadjust(PTAM, World,nkeyframes,nconstraints,Cgt)
 %BUNDLEADJUST Does bundle adustment on the PTAM model.
 
 
@@ -14,30 +14,22 @@ npoints = size(PTAM.Map.points,2);
 
 dp = 1;
 niter = 5;
-iter = 1;
+iter = 0;
 
-lambda = 0.00000000001;
+lambda = 0.0001;
 
+
+
+display('Generating id map...');
 for i = 1:ncameras
     map{i} = generateidmap(PTAM.KeyFrames(i));
 end
 
 
-if size(PTAM.KeyFrames,2) <= 1
-    outPTAM = PTAM;
-    return;
-else
-    if size(PTAM.KeyFrames,2) < nkeyframes + 2
-        range = 2:size(PTAM.KeyFrames,2);
-    else
-        range =  size(PTAM.KeyFrames,2)-(nkeyframes-1):size(PTAM.KeyFrames,2);
-        
-        KeyFrame1 = PTAM.KeyFrames(size(PTAM.KeyFrames,2));
-        kf1position = camcentre(KeyFrame1.Camera.E);
-        [KeyFrame2 indices] =  findclosestkeyframe(PTAM.KeyFrames,kf1position,nkeyframes);
-        range = indices;        
-    end
-end
+
+display('Filling constraint matrix');
+
+range = 2:ncameras;
 
 LocalKeyFrames = PTAM.KeyFrames(range);
 
@@ -57,15 +49,39 @@ npoints = size(ids,1);
 counts = kfidhist(PTAM.KeyFrames,ids);
 
 
-C = ones(npoints,npoints)*-1;
-
+C = -1*ones(npoints,npoints);
+count = 0;
 for i = 1:size(Cgt,1)-1
-    for j = i+1:size(Cgt,2)
+    for j = i:size(Cgt,2)
         
         if sum(gtids == i)>0 && sum(gtids == j)>0
-            consi = gtids == i;
-            consj = gtids == j;
-            C(consi,consj) = Cgt(i,j);
+            consi = find(gtids == i);
+            consj = find(gtids == j);
+            
+            for k = 1:size(consi,1)
+                for l = 1:size(consj,1)
+                    ci = consi(k);
+                    cj = consj(l);
+                    if ci ~= cj
+                        if cj<ci
+                            temp = cj;
+                            cj = ci;
+                            ci = temp;
+                        end
+                        if C(ci,cj) == -1
+                            C(ci,cj) = Cgt(i,j);
+                            count = count + 1;
+                        end
+              
+                    end
+                end
+            end
+                
+            
+            
+            
+            
+            
         end
         
     end
@@ -78,7 +94,7 @@ end
 
 nconstraints = sum(sum(C>0));
 
-
+display('Running...');
 
 
 
@@ -117,15 +133,13 @@ while iter < niter
     
     newPTAM = scaleapplyparam(PTAM, range,ids, param);
 
-    [nr] = scalecalculateresiduals2(newPTAM, range, counts,map,true,ids,C);
+    [nr] = scalecalculateresiduals2(newPTAM, range, counts,map,false,ids,C);
     
     
     nerror = nr'*nr;
-    
-    
- 
+   
 
-
+   
     
 
     clc
@@ -142,7 +156,7 @@ while iter < niter
     display(cerror);
 
 
-    
+    PTAM = newPTAM;
     if nerror < error
         PTAM = newPTAM;
         lambda = lambda * (1-0.1);

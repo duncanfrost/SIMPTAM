@@ -4,7 +4,7 @@ PTAM = getappdata(handles.figure1,'ptam');
 
 %framestatus = 1 just makes new frames, 2 creates new and saves them, 3
 %uses previously saved frames.
-framestatus = 3; 
+framestatus = 1; 
 
 
 if framestatus == 2 
@@ -37,6 +37,8 @@ display('Done estimating!');
 if framestatus == 2 
     setappdata(handles.figure1,'frames',Frames);
     save Frames Frames;
+    Map = World.Map;
+    save Map Map;
 end
 
 setappdata(handles.figure1,'ptam',PTAM);

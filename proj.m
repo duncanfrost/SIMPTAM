@@ -22,7 +22,7 @@ function varargout = proj(varargin)
 
 % Edit the above text to modify the response to help proj
 
-% Last Modified by GUIDE v2.5 14-Aug-2013 09:38:09
+% Last Modified by GUIDE v2.5 14-Aug-2013 18:12:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -47,6 +47,12 @@ end
 % --- Executes just before proj is made visible.
 function proj_OpeningFcn(hObject, eventdata, handles, varargin)
 clc;
+
+a = getappdata(0,'inarg');
+s = RandStream('mt19937ar','Seed',0);
+RandStream.setGlobalStream(s);
+          
+          
 
 addpath('gui');
 addpath('geometry');
@@ -86,21 +92,34 @@ handles.output = hObject;
 % Update handles structure
 guidata(hObject, handles);
 
+
+pushbutton_path_Callback(0,0,handles);
+
+
 % UIWAIT makes proj wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
 
 function Init(handles, Path)
 
+loadfromframes = false;
 
-if strcmp(Path.type, 'straight');
-    Map.points = passagegenerate(2,100,2, 1000);
-    set(handles.viewtopdown,'YLim',[0 100]);
-    
-else
-    Map.points = generateworldpoints3(10,3);
+
+if loadfromframes
+    load Map;
     set(handles.viewtopdown,'YLim',[-15 15]);
+else
+    if strcmp(Path.type, 'straight');
+        Map.points = passagegenerate(2,100,2, 1000);
+        set(handles.viewtopdown,'YLim',[0 100]);
+        
+    else
+        Map.points = generateworldpoints3(10,3);
+        set(handles.viewtopdown,'YLim',[-15 15]);
+    end
 end
+
+
 
 Camera.f = 0.5;
 ay = 480*Camera.f;
@@ -139,7 +158,11 @@ setappdata(handles.figure1,'ptam',PTAM);
 
 % --- Outputs from this function are returned to the command line.
 function varargout = proj_OutputFcn(~, ~, handles)
-varargout{1} = handles.output;
+World = getappdata(handles.figure1,'world');
+PTAM = getappdata(handles.figure1,'ptam');
+
+varargout{1} = PTAM;
+varargout{2} = World;
 
 % --- Executes on button press in pushbutton_w.
 function pushbutton_w_Callback(~, ~, handles)
@@ -192,21 +215,24 @@ function pushbutton_path_Callback(~, ~, handles)
 PTAM = getappdata(handles.figure1,'ptam');
 Path = getappdata(handles.figure1,'path');
 
-while PTAM.kfcount < 17
+while PTAM.kfcount < 3
     PTAM = getappdata(handles.figure1,'ptam');
     PathStep(handles);
     
     if PTAM.run
         EstimateCamera(handles);
         AddKeyFrame(handles);
-        RunLocalScaleAdjustBA(handles);
+        RunLocalBA(handles)
     end
-
-    UpdateTick(handles);
-    drawnow;
-
     
+    UpdateTick(handles);
+    drawnow;    
 end
+
+% close all;
+
+
+
 
 function UpdateTick(handles)
 World = getappdata(handles.figure1,'world');
@@ -234,8 +260,9 @@ PTAM = getappdata(handles.figure1,'ptam');
 PathStep(handles);
 if PTAM.run
     EstimateCamera(handles);
+    
     AddKeyFrame(handles);
-%     RunScaleAdjustBA(handles);
+    %     RunScaleAdjustBA(handles);
 end
 
 UpdateTick(handles);
@@ -313,7 +340,7 @@ for i = 1:size(PTAM.KeyFrames,2)
         Ext{i} = PTAM.KeyFrames(j).Camera.E/PTAM.KeyFrames(i).Camera.E;
     end
     
-%     Ext{i} = ExtGT{i};
+    %     Ext{i} = ExtGT{i};
     
 end
 setappdata(handles.figure1,'ext',Ext);
@@ -421,7 +448,7 @@ checkforemptyids(PTAM);
 function RunLocalBA(handles)
 World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
-outPTAM = localbundleadjust(PTAM, World,2);
+outPTAM = localbundleadjust(PTAM, World,4);
 PTAM = outPTAM;
 setappdata(handles.figure1,'ptam',PTAM);
 UpdateTick(handles);
@@ -430,7 +457,7 @@ function RunLocalScaleAdjustBA(handles)
 World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
 load Constraints;
-% 
+
 % ngtpoints = size(World.Map.points,2);
 % C = zeros(ngtpoints,ngtpoints);
 
@@ -445,13 +472,14 @@ function RunGlobalScaleAdjustBA(handles)
 World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
 load Constraints;
-
+%
 % ngtpoints = size(World.Map.points,2);
 % C = zeros(ngtpoints,ngtpoints);
 
 kfcount = size(PTAM.KeyFrames,2);
+% C = C*1.5;
 
-PTAM = scalebundleadjust(PTAM, World,kfcount,2,C);
+PTAM = globalscalebundleadjust(PTAM, World,kfcount,2,C);
 
 setappdata(handles.figure1,'ptam',PTAM);
 UpdateTick(handles);
@@ -465,8 +493,9 @@ function pushbutton_genconstraint_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 World = getappdata(handles.figure1,'world');
 load Frames;
-counts = ones(17,1)*1;
-C = constraintmatrix(Frames, World,counts);
+% counts = ones(18,1);
+counts = 200000;
+C = constraintmatrix2(World, counts);
 save Constraints C;
 display('Written constraint matrix');
 
@@ -478,3 +507,17 @@ function pushbutton_globalscale_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 RunGlobalScaleAdjustBA(handles);
+
+
+% --- Executes on button press in pushbutton_camadjust.
+function pushbutton_camadjust_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_camadjust (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+World = getappdata(handles.figure1,'world');
+PTAM = getappdata(handles.figure1,'ptam');
+
+PTAM = camadjust(PTAM, World);
+
+setappdata(handles.figure1,'ptam',PTAM);
+UpdateTick(handles);

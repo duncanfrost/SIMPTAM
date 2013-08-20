@@ -1,8 +1,9 @@
-function [ C ] = constraintmatrix(Frames, World,counts)
+function [ C ] = constraintmatrix3(World,counts)
 
 ngtpoints = size(World.Map.points,2);
 
 C = zeros(ngtpoints,ngtpoints);
+Frames = World.KeyFrames;
 
 gtids = [];
 for i = 1:size(Frames,2)

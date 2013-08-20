@@ -46,6 +46,7 @@ set(handles.text_gtmappoints,'String',['Number of GT Map Points: ' num2str(count
 set(handles.text_estmappoints,'String',['Number of Est Map Points: ' num2str(estcount)]);
 set(handles.text_averagemaperror,'String',['Average Map Error: ' num2str(error/count)]);
 
+% handles.output = error;
 
 end
 

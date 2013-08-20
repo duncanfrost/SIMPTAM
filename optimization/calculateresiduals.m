@@ -13,11 +13,25 @@ K = KeyFrames(1).Camera.K;
 
 
     
-
+% f1 = figure;
+% f2 = figure;
+% 
+% hold on;
 
 row = -1;
 for i = 1:ncameras
     E = KeyFrames(i).Camera.E;
+%     if i == 1
+%         figure(f1);
+%         hold on;
+%     end
+%     if i == 2
+%         figure(f2);
+%         hold on;
+%     end
+    
+    
+    
 
     for j = 1:npoints
         row = row + 2;
@@ -38,6 +52,10 @@ for i = 1:ncameras
 
             u = imagePoint(1);
             v = imagePoint(2);
+%             
+%             plot(u,v,'rx');
+%             
+%             plot(x,y,'bx');
 
             r(row) = (x-u);
             r(row + 1) = (y-v);
