@@ -86,7 +86,7 @@ for i = 1:size(PTAM.KeyFrames,2)
 end
 row = row + 1;
 
-lambda = 100;
+lambda = 0.01;
 
 N = zeros(3,1);
 for i = 1:npoints

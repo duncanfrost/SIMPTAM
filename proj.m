@@ -68,6 +68,7 @@ addpath('scale');
 addpath('dataassociation');
 addpath('drawing');
 addpath('general');
+addpath('datacollection');
 
 set(handles.checkbox_runptam, 'Value',1);
 
@@ -93,7 +94,7 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 
-pushbutton_path_Callback(0,0,handles);
+% pushbutton_path_Callback(0,0,handles);
 
 
 % UIWAIT makes proj wait for user response (see UIRESUME)
@@ -215,18 +216,19 @@ function pushbutton_path_Callback(~, ~, handles)
 PTAM = getappdata(handles.figure1,'ptam');
 Path = getappdata(handles.figure1,'path');
 
-while PTAM.kfcount < 3
-    PTAM = getappdata(handles.figure1,'ptam');
+while PTAM.kfcount < 8
+    
     PathStep(handles);
     
     if PTAM.run
         EstimateCamera(handles);
         AddKeyFrame(handles);
-        RunLocalBA(handles)
+        RunLocalScaleAdjustBA(handles)
     end
     
     UpdateTick(handles);
     drawnow;    
+    PTAM = getappdata(handles.figure1,'ptam');
 end
 
 % close all;
@@ -479,7 +481,7 @@ load Constraints;
 kfcount = size(PTAM.KeyFrames,2);
 % C = C*1.5;
 
-PTAM = globalscalebundleadjust(PTAM, World,kfcount,2,C);
+PTAM = globalscalebundleadjust(PTAM, World,kfcount,4,C);
 
 setappdata(handles.figure1,'ptam',PTAM);
 UpdateTick(handles);
