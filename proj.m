@@ -48,6 +48,9 @@ end
 function proj_OpeningFcn(hObject, eventdata, handles, varargin)
 clc;
 
+
+movegui(hObject,'east');
+
 a = getappdata(0,'inarg');
 s = RandStream('mt19937ar','Seed',0);
 RandStream.setGlobalStream(s);
@@ -94,7 +97,7 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 
-% pushbutton_path_Callback(0,0,handles);
+pushbutton_path_Callback(0,0,handles);
 
 
 % UIWAIT makes proj wait for user response (see UIRESUME)
@@ -165,6 +168,8 @@ PTAM = getappdata(handles.figure1,'ptam');
 varargout{1} = PTAM;
 varargout{2} = World;
 
+close all;
+
 % --- Executes on button press in pushbutton_w.
 function pushbutton_w_Callback(~, ~, handles)
 ManualMove(handles, [0 0 1 0]', 0);
@@ -216,14 +221,16 @@ function pushbutton_path_Callback(~, ~, handles)
 PTAM = getappdata(handles.figure1,'ptam');
 Path = getappdata(handles.figure1,'path');
 
-while PTAM.kfcount < 8
+while PTAM.kfcount < 18
     
     PathStep(handles);
     
     if PTAM.run
         EstimateCamera(handles);
         AddKeyFrame(handles);
-        RunLocalScaleAdjustBA(handles)
+        RunLocalScaleAdjustBA(handles);
+%     RunLocalBA(handles);
+        
     end
     
     UpdateTick(handles);
@@ -231,7 +238,7 @@ while PTAM.kfcount < 8
     PTAM = getappdata(handles.figure1,'ptam');
 end
 
-% close all;
+
 
 
 

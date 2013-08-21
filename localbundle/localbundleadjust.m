@@ -20,10 +20,10 @@ npoints = size(PTAM.Map.points,2);
 
 
 dp = 1;
-niter = 10;
+niter = 20;
 iter = 0;
 
-lambda = 0.002;
+lambda = 0.00000000001;
 
 for i = 1:ncameras
     map{i} = generateidmap(PTAM.KeyFrames(i));

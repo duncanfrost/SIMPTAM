@@ -78,10 +78,6 @@ for i = 1:size(Cgt,1)-1
             end
                 
             
-            
-            
-            
-            
         end
         
     end

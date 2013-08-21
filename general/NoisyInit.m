@@ -78,7 +78,7 @@ end
 
 
 
-PTAM = bundleadjust(PTAM,World);
+% PTAM = bundleadjust(PTAM,World);
 
 
 

@@ -13,7 +13,7 @@ npoints = size(PTAM.Map.points,2);
 
 
 dp = 1;
-niter = 5;
+niter = 20;
 iter = 1;
 
 lambda = 0.00000000001;
@@ -28,7 +28,7 @@ if size(PTAM.KeyFrames,2) <= 1
     return;
 else
     if size(PTAM.KeyFrames,2) < nkeyframes + 2
-        range = 2:size(PTAM.KeyFrames,2);
+        range = 3:size(PTAM.KeyFrames,2);
     else
         range =  size(PTAM.KeyFrames,2)-(nkeyframes-1):size(PTAM.KeyFrames,2);
         
