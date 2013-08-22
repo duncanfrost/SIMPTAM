@@ -233,8 +233,8 @@ while PTAM.kfcount < 18
         
     end
     
-    UpdateTick(handles);
-    drawnow;    
+%     UpdateTick(handles);
+%     drawnow;    
     PTAM = getappdata(handles.figure1,'ptam');
 end
 
@@ -473,7 +473,7 @@ load Constraints;
 PTAM = scalebundleadjust(PTAM, World,4,2,C);
 
 setappdata(handles.figure1,'ptam',PTAM);
-UpdateTick(handles);
+% UpdateTick(handles);
 
 
 
