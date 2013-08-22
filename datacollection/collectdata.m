@@ -1,5 +1,5 @@
 
-ntests = 25;
+ntests = 1;
 load WorldFrames;
 Frames = World.KeyFrames;
 
@@ -20,9 +20,10 @@ end
 
 Errors = zeros(18,ntests);
 
-for i = 1:18
+for j = 1:ntests
     
-    for j = 1:ntests
+    for i = 11:18
+        
         C = Const{i,j};
         save Constraints C;
         [PTAM World] = proj;
@@ -30,7 +31,7 @@ for i = 1:18
         [error count] = calculateworlderror(World.Map,PTAM.Map);
         Errors(i,j) = error;
         save Errors1 Errors
-
+        
     end
 end
 
