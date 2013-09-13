@@ -4,7 +4,7 @@ ImagePoints = [];
 haspoints = false;
 for i = 1:length(World.points)
     
-    ImagePoint = projectpoint(Camera, World.points(i),noise, associate,camID);
+    ImagePoint = projectpoint(Camera, World.points(i),noise, associate);
     if (~isempty(ImagePoint))
         if ~haspoints
             haspoints = true;

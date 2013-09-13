@@ -18,7 +18,6 @@ if theta == 0
     V = eye(3,3);
 else
     w = invcrossnot((1/(2*sin(theta)))*(R-R'));
-    w = w*theta;
     V = eye(3,3) + ((1-cos(theta))/theta^2)*crossnot(w) + ((theta-sin(theta))/theta^3)*(crossnot(w)^2);
 end
 
@@ -31,7 +30,7 @@ v = V\t;
 
 
 
-mu(4:6) = w;
+mu(4:6) = w*theta;
 mu(1:3) = v;
 
 end

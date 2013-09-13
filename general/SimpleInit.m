@@ -22,12 +22,16 @@ end
 
 
 PTAM.Camera = World.Camera;
+PTAM.Camera.se3 = [-8 0 0 0 0 0]';
+
+
 World.KeyFrames(1) = CurrFrame;
 
 % CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,PTAM.noise,false);
 
 PTAM.KeyFrames(1).ImagePoints = CurrFrame.ImagePoints;
 PTAM.KeyFrames(1).Camera = World.Camera;
+PTAM.KeyFrames(1).Camera.se3 = [-8 0 0 0 0 0]';
 
 PTAM.kfcount = 1;
 

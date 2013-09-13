@@ -22,7 +22,7 @@ function varargout = proj(varargin)
 
 % Edit the above text to modify the response to help proj
 
-% Last Modified by GUIDE v2.5 14-Aug-2013 18:12:52
+% Last Modified by GUIDE v2.5 12-Sep-2013 12:58:53
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -97,7 +97,7 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 
-pushbutton_path_Callback(0,0,handles);
+%pushbutton_path_Callback(0,0,handles);
 
 
 % UIWAIT makes proj wait for user response (see UIRESUME)
@@ -168,7 +168,7 @@ PTAM = getappdata(handles.figure1,'ptam');
 varargout{1} = PTAM;
 varargout{2} = World;
 
-close all;
+%close all;
 
 % --- Executes on button press in pushbutton_w.
 function pushbutton_w_Callback(~, ~, handles)
@@ -208,8 +208,8 @@ hold on;
 World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
 
-CurrFrame_World.ImagePoints = makeimage(World.Camera, World.Map,0,false);
-CurrFrame_PTAM.ImagePoints = makeimage(World.Camera, PTAM.Map,0,false);
+CurrFrame_World.ImagePoints = makeimage(World.Camera, World.Map,0,false,0);
+CurrFrame_PTAM.ImagePoints = makeimage(World.Camera, PTAM.Map,0,false,0);
 
 displayimage(CurrFrame_World.ImagePoints,[1 0 0]);
 displayimage(CurrFrame_PTAM.ImagePoints,[0 0 1]);
@@ -530,3 +530,66 @@ PTAM = camadjust(PTAM, World);
 
 setappdata(handles.figure1,'ptam',PTAM);
 UpdateTick(handles);
+
+
+% --- Executes on button press in pushbutton_writetofiles.
+function pushbutton_writetofiles_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_writetofiles (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+PTAM = getappdata(handles.figure1,'ptam');
+
+%Write Camera Stuff
+fCams = fopen('Cams.txt','w');
+for i = 1:size(PTAM.KeyFrames,2)
+    log = logmap(PTAM.KeyFrames(i).Camera.E);
+    for j = 1:6
+        fprintf(fCams,'%d ',log(j));
+    end
+    display(logmap(PTAM.KeyFrames(i).Camera.E));
+    display(expmap(logmap(PTAM.KeyFrames(i).Camera.E)));
+    display(PTAM.KeyFrames(i).Camera.E);
+end
+fclose(fCams);
+
+pointCount = 0;
+fPoints = fopen('Points.txt','w');
+for i = 1:size(PTAM.Map.points,2)
+    location = PTAM.Map.points(i).location;
+    for j = 1:3
+        fprintf(fPoints,'%d ',location(j));
+        pointCount = pointCount+1;
+    end
+   
+end
+fclose(fPoints);
+
+fMeas= fopen('Meas.txt','w');
+for i = 1:size(PTAM.KeyFrames,2)
+    
+    
+    for j = 1:size(PTAM.KeyFrames(i).ImagePoints,2)
+        if ~isempty(PTAM.KeyFrames(i).ImagePoints(j).id)
+            
+            if PTAM.KeyFrames(i).ImagePoints(j).id > 44
+                display('Error');
+            end
+            
+            
+            fprintf(fMeas,'%d ',i);
+            fprintf(fMeas,'%d ',PTAM.KeyFrames(i).ImagePoints(j).id);
+            fprintf(fMeas,'%d ',PTAM.KeyFrames(i).ImagePoints(j).location(1));
+            fprintf(fMeas,'%d ',PTAM.KeyFrames(i).ImagePoints(j).location(2));
+        end
+    end
+   
+end
+
+fclose(fMeas);
+
+
+
+
+
+
+

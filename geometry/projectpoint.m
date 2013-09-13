@@ -1,4 +1,4 @@
-function [ImagePoint] = projectpoint(Camera, WorldPoint,noise,associate)
+function [ImagePoint] = projectpoint(Camera, WorldPoint,noise,associate,camID)
 ImagePoint = [];
 X = WorldPoint.location;
 nX = Camera.E*X;
@@ -25,6 +25,7 @@ if norm(nX(1:3)) < 15
             ImagePoint.location = [x(1) x(2) 1]';
             ImagePoint.gtlocation = [gtx(1) gtx(2) 1]';
             ImagePoint.X = X;
+            ImagePoint.c = camID;
         end
     end
     

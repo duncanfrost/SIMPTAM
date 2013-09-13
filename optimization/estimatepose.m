@@ -32,6 +32,7 @@ while iter < niter
     if nerror <= error
         error = nerror;
         PTAM.Camera.E = expmap(param)*PTAM.Camera.E; 
+        %PTAM.Camera.se3 = PTAM.Camera.se3 + param;
         lambda = lambda * (1-0.1);
     else
         lambda = lambda * (1+0.1);

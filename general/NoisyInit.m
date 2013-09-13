@@ -6,7 +6,7 @@ framestatus = 1;
 
 
 
-CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,0,false);
+CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,0,false,1);
 CurrFrame.Camera = World.Camera;
 
 
@@ -22,7 +22,7 @@ if framestatus == 3
     CurrFrame.ImagePoints = Frames(1).ImagePoints;
     
 else
-    CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,PTAM.noise,false);
+    CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,PTAM.noise,false,1);
 end
 
 
@@ -35,7 +35,7 @@ setappdata(handles.figure1,'world',World);
 PathStep(handles);
 World = getappdata(handles.figure1,'world');
 
-CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,0,false);
+CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,0,false,1);
 CurrFrame.Camera = World.Camera;
 World.KeyFrames(2) = CurrFrame;
 
@@ -44,7 +44,7 @@ if framestatus == 3
     load Frames;
     CurrFrame.ImagePoints = Frames(2).ImagePoints;
 else
-    CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,PTAM.noise,false);
+    CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,PTAM.noise,false,2);
 end
 
 

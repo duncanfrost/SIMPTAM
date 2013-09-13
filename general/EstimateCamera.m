@@ -14,7 +14,7 @@ end
 if framestatus == 3 
 	load Frames
 else
-    CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,PTAM.noise,false);
+    CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,PTAM.noise,false,PTAM.kfcount+1);
 end
 
 if framestatus == 2 

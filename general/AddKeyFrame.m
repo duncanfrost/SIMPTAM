@@ -6,7 +6,7 @@ World = getappdata(handles.figure1,'world');
 PTAM.kfcount = PTAM.kfcount + 1;
 PTAM.KeyFrames(PTAM.kfcount) = PTAM.CurrFrame;
 
-CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,0,false);
+CurrFrame.ImagePoints = makeimage(World.Camera, World.Map,0,false,PTAM.kfcount);
 CurrFrame.Camera = World.Camera;
 World.KeyFrames(PTAM.kfcount) = CurrFrame;
 
