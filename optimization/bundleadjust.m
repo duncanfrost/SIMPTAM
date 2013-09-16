@@ -16,10 +16,10 @@ npoints = size(PTAM.Map.points,2);
 
 
 dp = 1;
-niter = 5;
+niter = 500;
 iter = 0;
 
-lambda = 0.00000000001;
+lambda = 0.1;
 
 for i = 1:ncameras
     map{i} = generateidmap(PTAM.KeyFrames(i));
@@ -38,6 +38,9 @@ while iter < niter
     res_start = tic;
     [r, J] = calculateresiduals(PTAM.KeyFrames, PTAM.Map,map,true);
     res_end = toc(res_start);
+    
+    g1 = load('/home/avlinux/Working/PTAM2/PTAM/grad.txt');
+    g2 = J'*r;
 
 
     error = r'*r;

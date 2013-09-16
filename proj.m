@@ -544,7 +544,7 @@ fCams = fopen('Cams.txt','w');
 for i = 1:size(PTAM.KeyFrames,2)
     log = logmap(PTAM.KeyFrames(i).Camera.E);
     for j = 1:6
-        fprintf(fCams,'%d ',log(j));
+        fprintf(fCams,'%d ',double(log(j)));
     end
     display(logmap(PTAM.KeyFrames(i).Camera.E));
     display(expmap(logmap(PTAM.KeyFrames(i).Camera.E)));
@@ -557,7 +557,7 @@ fPoints = fopen('Points.txt','w');
 for i = 1:size(PTAM.Map.points,2)
     location = PTAM.Map.points(i).location;
     for j = 1:3
-        fprintf(fPoints,'%d ',location(j));
+        fprintf(fPoints,'%f ',double(location(j)));
         pointCount = pointCount+1;
     end
    
@@ -576,10 +576,10 @@ for i = 1:size(PTAM.KeyFrames,2)
             end
             
             
-            fprintf(fMeas,'%d ',i);
-            fprintf(fMeas,'%d ',PTAM.KeyFrames(i).ImagePoints(j).id);
-            fprintf(fMeas,'%d ',PTAM.KeyFrames(i).ImagePoints(j).location(1));
-            fprintf(fMeas,'%d ',PTAM.KeyFrames(i).ImagePoints(j).location(2));
+            fprintf(fMeas,'%d ',double(i));
+            fprintf(fMeas,'%d ',double(PTAM.KeyFrames(i).ImagePoints(j).id));
+            fprintf(fMeas,'%d ',double(PTAM.KeyFrames(i).ImagePoints(j).location(1)));
+            fprintf(fMeas,'%d ',double(PTAM.KeyFrames(i).ImagePoints(j).location(2)));
         end
     end
    
