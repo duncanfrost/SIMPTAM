@@ -24,7 +24,7 @@ for i = 1:size(KeyFrames,2)
     for j = 1:size(KeyFrames(i).ImagePoints,2)
         
         id = KeyFrames(i).ImagePoints(j).id;
-        if ~isempty(id)
+        if ~isempty(id) 
  
             row = row + 2;
             E = KeyFrames(i).Camera.E;
@@ -37,9 +37,9 @@ for i = 1:size(KeyFrames,2)
             Z = pointCamera(3);
             x = X/Z;
             y = Y/Z;
-%             pix = K*[x y 1]';
-%             x = pix(1);
-%             y = pix(2);
+            pix = K*[x y 1]';
+            x = pix(1);
+            y = pix(2);
             
             
             
@@ -58,8 +58,8 @@ for i = 1:size(KeyFrames,2)
             r(row + 1) = (y-v);
             
             
-%             fx = K(1,1);
-%             fy = K(2,2);
+            fx = K(1,1);
+            fy = K(2,2);
             
             point = id;
             cam = i;
@@ -71,15 +71,15 @@ for i = 1:size(KeyFrames,2)
                 if i > 1
                     for c = 1:camparams
                         [dX_dp dY_dp dZ_dp] = expdiffXn(X,Y,Z,eye(4,4),c);
-                        J(row,c + 6*(cam-2)) = (dX_dp*Z - dZ_dp*X)/(Z^2);
-                        J(row + 1,c + 6*(cam-2)) = (dY_dp*Z - dZ_dp*Y)/(Z^2);
+                        J(row,c + 6*(cam-2)) = fx*(dX_dp*Z - dZ_dp*X)/(Z^2);
+                        J(row + 1,c + 6*(cam-2)) = fy*(dY_dp*Z - dZ_dp*Y)/(Z^2);
                     end
                 end
                 
                  for p = 1:pointparams
                     [dX_dp dY_dp dZ_dp] = diffXn3D(E,p);
-                    J(row,6*(ncameras-1) + p + 3*(point-1)) = (dX_dp*Z - dZ_dp*X)/(Z^2);
-                    J(row + 1,6*(ncameras-1) + p + 3*(point-1)) = (dY_dp*Z - dZ_dp*Y)/(Z^2);
+                    J(row,6*(ncameras-1) + p + 3*(point-1)) = fx*(dX_dp*Z - dZ_dp*X)/(Z^2);
+                    J(row + 1,6*(ncameras-1) + p + 3*(point-1)) = fy*(dY_dp*Z - dZ_dp*Y)/(Z^2);
                 end
             end
         end

@@ -16,16 +16,16 @@ npoints = size(PTAM.Map.points,2);
 
 
 dp = 1;
-niter = 500;
+niter = 50;
 iter = 0;
 
-lambda = 0.1;
+lambda = 0.0001
 
 for i = 1:ncameras
     map{i} = generateidmap(PTAM.KeyFrames(i));
 end
     
-
+%dp = 0.0000001;
 
 
 while iter < niter
@@ -35,19 +35,47 @@ while iter < niter
     
    
     %Calculate residuals and jacobian
-    res_start = tic;
-    [r, J] = calculateresiduals(PTAM.KeyFrames, PTAM.Map,map,true);
-    res_end = toc(res_start);
-    
-    g1 = load('/home/avlinux/Working/PTAM2/PTAM/grad.txt');
-    g2 = J'*r;
-
-
-    error = r'*r;
+    tic
+      [r, J] = calculateresiduals(PTAM.KeyFrames, PTAM.Map,map,true);
     left = J'*J + lambda*diag(diag(J'*J));
     right = J'*r;
     pn = left\right;
     param = -dp*pn;
+    toc
+    
+    H = left;
+    
+    ncameras = size(PTAM.KeyFrames,2) - 1;
+    npoints = size(PTAM.Map.points,2);
+    
+    A = H(1:ncameras*6, 1:ncameras*6);
+    B = H(1:ncameras*6,ncameras*6+1:size(H,2));
+    C = B';
+    D = H(ncameras*6 + 1:size(H,2),ncameras*6 + 1:size(H,2));
+    
+    Dinv = inv(D); %This is easy to calculate;
+    
+    a = right(1:ncameras*6);
+    b = right(ncameras*6+1:size(H,2));
+
+    
+    left1 = (A-B*Dinv*C);
+    right1 = a - B*Dinv*b;
+    
+
+   
+    
+    
+    tic
+    [vCameras, vPoints, mMeasurements, delta_cams, delta_points] = calculateresidualssparse(PTAM.KeyFrames, PTAM.Map,map,true,lambda,left1,right1);
+    toc
+    
+
+    
+   
+    
+    %error = r'*r;
+ 
     
     
     rescount = size(r,1)/2;
@@ -62,25 +90,25 @@ while iter < niter
     nerror = nr'*nr;
     
     
-    rescalePTAM = applyrescale(newPTAM,World);
-
-    [rr] = calculateresiduals(rescalePTAM.KeyFrames, rescalePTAM.Map, map,false);
-    rerror = rr'*rr;
+%     rescalePTAM = applyrescale(newPTAM,World);
+% 
+%     [rr] = calculateresiduals(rescalePTAM.KeyFrames, rescalePTAM.Map, map,false);
+%     rerror = rr'*rr;
     
     
     clc
     display(rescount);
     display(error);
     display(nerror);
-    display(rerror);
+    %display(rerror);
     display(iter);
     display(norm(param));
     display(lambda);
     display(res_end);
 
     
-    if rerror < error
-        PTAM = rescalePTAM;
+    if nerror < error
+        PTAM = newPTAM;
         lambda = lambda * (1-0.1);
     else
         lambda = lambda * (1+0.1);

@@ -22,7 +22,7 @@ function varargout = proj(varargin)
 
 % Edit the above text to modify the response to help proj
 
-% Last Modified by GUIDE v2.5 12-Sep-2013 12:58:53
+% Last Modified by GUIDE v2.5 18-Sep-2013 11:15:19
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -52,7 +52,7 @@ clc;
 movegui(hObject,'east');
 
 a = getappdata(0,'inarg');
-s = RandStream('mt19937ar','Seed',0);
+s = RandStream('mt19937ar','Seed',1);
 RandStream.setGlobalStream(s);
           
           
@@ -481,17 +481,41 @@ function RunGlobalScaleAdjustBA(handles)
 World = getappdata(handles.figure1,'world');
 PTAM = getappdata(handles.figure1,'ptam');
 load Constraints;
-%
-% ngtpoints = size(World.Map.points,2);
-% C = zeros(ngtpoints,ngtpoints);
+
+ngtpoints = size(World.Map.points,2);
+C = zeros(ngtpoints,ngtpoints);
+
+% C = AddConstraint(C,115,166,World);
+% 
+% C = AddConstraint(C,168,200,World);
+% C = AddConstraint(C,82,110,World);
+% C = AddConstraint(C,177,198,World);
+
+C(3,4) = 1;
+
 
 kfcount = size(PTAM.KeyFrames,2);
-% C = C*1.5;
+
+
+
 
 PTAM = globalscalebundleadjust(PTAM, World,kfcount,4,C);
 
 setappdata(handles.figure1,'ptam',PTAM);
 UpdateTick(handles);
+
+function C = AddConstraint(C,p1,p2,World)
+l1 = World.Map.points(p1).location;
+l2 = World.Map.points(p2).location;
+
+D = [l1(1)-l2(1) l1(2)-l2(2) l1(3)-l2(3)]';
+D = D'*D;
+D = sqrt(D);
+
+
+C(p1,p2) = D;
+
+
 
 
 
@@ -501,12 +525,16 @@ function pushbutton_genconstraint_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 World = getappdata(handles.figure1,'world');
-load Frames;
-% counts = ones(18,1);
-counts = 200000;
-C = constraintmatrix2(World, counts);
+% load Frames;
+Frames = PTAM.KeyFrames;
+counts = ones(18,1);
+% counts = 200000;
+C = constraintmatrix(Frames, World,counts);
 save Constraints C;
 display('Written constraint matrix');
+
+
+
 
 
 
@@ -532,12 +560,13 @@ setappdata(handles.figure1,'ptam',PTAM);
 UpdateTick(handles);
 
 
-% --- Executes on button press in pushbutton_writetofiles.
+% ---  Executes on button press in pushbutton_writetofiles.
 function pushbutton_writetofiles_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_writetofiles (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 PTAM = getappdata(handles.figure1,'ptam');
+World = getappdata(handles.figure1,'world');
 
 %Write Camera Stuff
 fCams = fopen('Cams.txt','w');
@@ -560,9 +589,20 @@ for i = 1:size(PTAM.Map.points,2)
         fprintf(fPoints,'%f ',double(location(j)));
         pointCount = pointCount+1;
     end
+    
+    fprintf(fPoints,'%f ',double(PTAM.Map.points(i).gtid));
    
 end
 fclose(fPoints);
+
+fGTPoints = fopen('GTPoints.txt','w');
+for i = 1:size(World.Map.points,2)
+    location = World.Map.points(i).location;
+    for j = 1:3
+        fprintf(fGTPoints,'%f ',double(location(j)));
+    end
+end
+fclose(fGTPoints);
 
 fMeas= fopen('Meas.txt','w');
 for i = 1:size(PTAM.KeyFrames,2)
@@ -570,11 +610,6 @@ for i = 1:size(PTAM.KeyFrames,2)
     
     for j = 1:size(PTAM.KeyFrames(i).ImagePoints,2)
         if ~isempty(PTAM.KeyFrames(i).ImagePoints(j).id)
-            
-            if PTAM.KeyFrames(i).ImagePoints(j).id > 44
-                display('Error');
-            end
-            
             
             fprintf(fMeas,'%d ',double(i));
             fprintf(fMeas,'%d ',double(PTAM.KeyFrames(i).ImagePoints(j).id));
@@ -586,6 +621,118 @@ for i = 1:size(PTAM.KeyFrames,2)
 end
 
 fclose(fMeas);
+
+
+% --- Executes on button press in pushbutton_kfdistances.
+function pushbutton_kfdistances_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_kfdistances (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+PTAM = getappdata(handles.figure1,'ptam');
+World = getappdata(handles.figure1,'world');
+
+pc1 = camcentre(PTAM.KeyFrames(1).Camera.E);
+pc2 = camcentre(PTAM.KeyFrames(2).Camera.E);
+
+wc1 = camcentre(World.KeyFrames(1).Camera.E);
+wc2 = camcentre(World.KeyFrames(2).Camera.E);
+
+pdiff = norm(pc1 - pc2);
+wdiff = norm(wc1 - wc2);
+
+display(pdiff);
+display(wdiff);
+
+
+% --- Executes on button press in pushbutton_loadfromc.
+function pushbutton_loadfromc_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_loadfromc (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+PTAM = getappdata(handles.figure1,'ptam');
+row = 1;
+cpointsraw = load('/home/avlinux/Working/PTAM2/PTAM/outpoints.txt');
+for i = 1:size(PTAM.Map.points,2)
+        
+
+        PTAM.Map.points(i).location(1) = cpointsraw(row);
+        row = row + 1;
+        PTAM.Map.points(i).location(2) = cpointsraw(row);
+        row = row + 1;
+        PTAM.Map.points(i).location(3) = cpointsraw(row);
+        row = row + 1;
+end
+
+
+ccamsraw = load('/home/avlinux/Working/PTAM2/PTAM/outcams.txt');
+mu = zeros(6,1);
+row = 1;
+for i = 1:size(PTAM.KeyFrames,2)
+    mu(1) = ccamsraw(row);
+    row = row + 1;
+    mu(2) = ccamsraw(row);
+    row = row + 1;
+    mu(3) = ccamsraw(row);
+    row = row + 1;
+    mu(4) = ccamsraw(row);
+    row = row + 1;
+    mu(5) = ccamsraw(row);
+    row = row + 1;
+    mu(6) = ccamsraw(row);
+    row = row + 1;
+    PTAM.KeyFrames(i).Camera.E = expmap(mu);
+end
+
+
+setappdata(handles.figure1,'ptam',PTAM);
+UpdateTick(handles);
+
+
+
+   
+
+
+% --- Executes on button press in pushbutton_writeconstraints.
+function pushbutton_writeconstraints_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_writeconstraints (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+PTAM = getappdata(handles.figure1,'ptam');
+World = getappdata(handles.figure1,'world');
+
+nPoints = size(PTAM.Map.points,2);
+nConstraints = 20000;
+
+fConstraints = fopen('Constraints.txt','w');
+
+for i = 1:nConstraints
+
+    p1 = randi([1 nPoints]);
+    p2 = randi([1 nPoints]);
+
+    while (p2 == p1)
+        p2 = randi([1 nPoints]);
+    end
+
+
+    gtid1 = PTAM.Map.points(p1).gtid;
+    gtid2 = PTAM.Map.points(p2).gtid;
+
+
+    location1 = World.Map.points(gtid1).location;
+    location2 = World.Map.points(gtid2).location;
+
+    value = norm(location1-location2);
+
+
+    fprintf(fConstraints,'%d ',p1);
+    fprintf(fConstraints,'%d ',p2);
+    fprintf(fConstraints,'%d ',double(value));
+
+end
+
+
+fclose(fConstraints);
 
 
 

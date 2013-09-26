@@ -13,10 +13,10 @@ npoints = size(PTAM.Map.points,2);
 
 
 dp = 1;
-niter = 5;
+niter = 50;
 iter = 0;
 
-lambda = 0.0001;
+lambda = 0.001;
 
 
 
@@ -107,6 +107,10 @@ while iter < niter
     [r, J] = scalecalculateresiduals2(PTAM, range, counts, map,true,ids,C);
     toc
     
+    
+
+    
+    
     nresi = size(r,1);
     cres = r(nresi-nconstraints+1:nresi);
     
@@ -119,6 +123,30 @@ while iter < niter
     right = J'*r;
     pn = left\right;
     param = -dp*pn;
+    
+    H = left;
+    
+         
+    ncameras = size(PTAM.KeyFrames,2) - 1;
+    npoints = size(PTAM.Map.points,2);
+    
+    A = H(1:ncameras*6, 1:ncameras*6);
+    B = H(1:ncameras*6,ncameras*6+1:size(H,2));
+    C = B';
+    D = H(ncameras*6 + 1:size(H,2),ncameras*6 + 1:size(H,2));
+    
+    Dinv = inv(D); %This is easy to calculate;
+    
+    a = right(1:ncameras*6);
+    b = right(ncameras*6+1:size(H,2));
+
+    
+    left1 = (A-B*Dinv*C);
+    right1 = a - B*Dinv*b;
+    
+    [vC, vP, mM, delta_cams, delta_points] = calculateresidualssparse(PTAM.KeyFrames, PTAM.Map,map,true,lambda,left1,right1);
+    
+    
 
 
 
