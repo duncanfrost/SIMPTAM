@@ -85,7 +85,10 @@ end
 
 
 
-
+C = C*0;
+C(1,6) = 1;
+C(5,7) = 1;
+C(3,4) = 1;
 
 
 nconstraints = sum(sum(C>0));
@@ -122,7 +125,7 @@ while iter < niter
     left = J'*J + lambda*diag(diag(J'*J));
     right = J'*r;
     pn = left\right;
-    param = -dp*pn;
+    param = dp*pn;
     
     H = left;
     
@@ -146,19 +149,39 @@ while iter < niter
     
     
     vCons{1}.p1 = 1;
-    vCons{1}.p2 = 2;
+    vCons{1}.p2 = 6;
     vCons{1}.value = 1;
+    
+    vCons{2}.p1 = 5;
+    vCons{2}.p2 = 7;
+    vCons{2}.value = 1;
+    
+    vCons{3}.p1 = 3;
+    vCons{3}.p2 = 4;
+    vCons{3}.value = 1;
+
+    
+    
+    
     
     
     [vC, vP, mM, vCons, delta_cams, delta_points] = calculateresidualssparse2(PTAM.KeyFrames, PTAM.Map,map,true,lambda,left1,right1,vCons,J,r);
     
     
 
+    orig_delta_cams = param(1:12);
+    orig_delta_points = param(13:33);
 
+    cam_error = norm(orig_delta_cams-delta_cams);
+    point_error = norm(orig_delta_points-delta_points);
 
-
-
-
+    clc;
+    display(cam_error);
+    display(point_error);
+    
+    p1index = [19 20 21];
+    p2index = [22 23 24];
+    
     
     
     newPTAM = scaleapplyparam(PTAM, range,ids, param);

@@ -116,16 +116,10 @@ for i = 1:size(KeyFrames,2)
 end
 
 
-for i=1:size(mMeasurements,1)
-    for j=1:size(mMeasurements,2)
-        if ~isempty(mMeasurements{i,j})
-            mMeasurements{i,j}.Y = mMeasurements{i,j}.W/vPoints{i}.Vstar;
-        end
-    end
-end
+
 
 alpha = 100;
-for i = 1:size(vCons,1)
+for i = 1:size(vCons,2)
     value = vCons{i}.value;
     p1 = vCons{i}.p1;
     p2 = vCons{i}.p2;
@@ -144,13 +138,13 @@ for i = 1:size(vCons,1)
     
     
     
-    B1(1) = (-alpha*N(1))/norm(N);
-    B1(2) = (-alpha*N(2))/norm(N);
-    B1(3) = (-alpha*N(3))/norm(N);
+    B1(1) = (alpha*N(1))/norm(N);
+    B1(2) = (alpha*N(2))/norm(N);
+    B1(3) = (alpha*N(3))/norm(N);
     
-    B2(1) = (alpha*N(1))/norm(N);
-    B2(2) = (alpha*N(2))/norm(N);
-    B2(3) = (alpha*N(3))/norm(N);
+    B2(1) = (-alpha*N(1))/norm(N);
+    B2(2) = (-alpha*N(2))/norm(N);
+    B2(3) = (-alpha*N(3))/norm(N);
     
     vPoints{p1}.Bcons = B1;
     vPoints{p2}.Bcons = B2;
@@ -159,8 +153,8 @@ for i = 1:size(vCons,1)
     vPoints{p1}.V = vPoints{p1}.V +  B1'*B1;
     vPoints{p2}.V = vPoints{p2}.V +  B2'*B2;
     
-    vPoints{p1}.Vstar = vPoints{meas.p}.V + diag(diag(vPoints{meas.p}.V))*lambda;
-    vPoints{p2}.Vstar = vPoints{meas.p}.V + diag(diag(vPoints{meas.p}.V))*lambda;
+    vPoints{p1}.Vstar = vPoints{p1}.V + diag(diag(vPoints{p1}.V))*lambda;
+    vPoints{p2}.Vstar = vPoints{p2}.V + diag(diag(vPoints{p2}.V))*lambda;
     
     vPoints{p1}.hasConstraint = true;
     vPoints{p2}.hasConstraint = true;
@@ -174,6 +168,16 @@ for i = 1:size(vCons,1)
     
     
     
+end
+
+for i=1:size(mMeasurements,1)
+    for j=1:size(mMeasurements,2)
+        if ~isempty(mMeasurements{i,j})
+            mMeasurements{i,j}.Y = mMeasurements{i,j}.W/vPoints{i}.Vstar;
+        else
+             mMeasurements{i,j}.W = zeros(6,3);
+        end
+    end
 end
 
 
@@ -192,17 +196,26 @@ for j = 2:size(KeyFrames,2)
     m6 =  vCameras{j}.Ustar;
     v6 =  vCameras{j}.ea;
     
-    for i = 1:size(vCons)
+    for i = 1:size(vCons,2)
         p1 = vCons{i}.p1;
         p2 = vCons{i}.p2;
-        if ~isempty(mMeasurements{p1,j}) && ~isempty(mMeasurements{p2,j})
-            W = [mMeasurements{p1,j}.W mMeasurements{p2,j}.W];
+        if ~isempty(mMeasurements{p1,j}) || ~isempty(mMeasurements{p2,j})
+            if ~isempty(mMeasurements{p1,j}) && ~isempty(mMeasurements{p2,j})
+                W = [mMeasurements{p1,j}.W mMeasurements{p2,j}.W];
+            else
+                if ~isempty(mMeasurements{p1,j})
+                    W = [mMeasurements{p1,j}.W zeros(6,3)];
+                else
+                     W = [zeros(6,3) mMeasurements{p2,j}.W];
+                end
+            end
+            
+            
             Y = W/vCons{i}.Vstar;
-            Eb = [vPoints{1}.eb; vPoints{2}.eb];
+            Eb = [vPoints{p1}.eb; vPoints{p2}.eb];
             m6 = m6 - Y*W';
             v6 = v6 - Y*Eb;
         end
-        
     end
     
     for i = 1:size(Map.points,2)
@@ -231,10 +244,10 @@ for j = 2:size(KeyFrames,2)
             kEnd = (k-2)*6 + 6;
             
             
-            for i = 1:size(vCons)
+            for i = 1:size(vCons,2)
                 p1 = vCons{i}.p1;
                 p2 = vCons{i}.p2;
-                if ~isempty(mMeasurements{p1,j}) && ~isempty(mMeasurements{p2,j})
+                if ~isempty(mMeasurements{p1,j}) && ~isempty(mMeasurements{p2,j}) && ~isempty(mMeasurements{p1,k}) && ~isempty(mMeasurements{p2,k})
                     W1 = [mMeasurements{p1,j}.W mMeasurements{p2,j}.W];
                     Y = W1/vCons{i}.Vstar;
                     W2 = [mMeasurements{p1,k}.W mMeasurements{p2,k}.W];
@@ -265,7 +278,7 @@ delta_cams = S\E;
 delta_points = zeros(3*size(Map.points,2),1);
 
 
-for i = 1:size(vCons,1)
+for i = 1:size(vCons,2)
     p1 = vCons{i}.p1;
     p2 = vCons{i}.p2;
     
@@ -281,11 +294,14 @@ for i = 1:size(vCons,1)
     end
     
     
-    pointStart = (p1-1)*3 + 1;
-    pointEnd = (p2-1)*3 + 3;
+    point1Start = (p1-1)*3 + 1;
+    point1End = (p1-1)*3 + 3;
+    point2Start = (p2-1)*3 + 1;
+    point2End = (p2-1)*3 + 3;
     
     delta = vCons{i}.Vstar\delta;
-    delta_points(pointStart:pointEnd) = delta;
+    delta_points(point1Start:point1End) = delta(1:3);
+    delta_points(point2Start:point2End) = delta(4:6);
     
 end
 

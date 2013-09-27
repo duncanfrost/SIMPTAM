@@ -63,8 +63,8 @@ for i = 1:size(KeyFrames,2)
             %
             %             plot(x,y,'bx');
             
-            r(row) = (x-u);
-            r(row + 1) = (y-v);
+            r(row) = (u-x);
+            r(row + 1) = (v-y);
             
             
             fx = K(1,1);

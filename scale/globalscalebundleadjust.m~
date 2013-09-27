@@ -85,6 +85,8 @@ end
 
 
 
+C = C*0;
+C(1,2) = 1;
 
 
 
@@ -145,16 +147,20 @@ while iter < niter
     right1 = a - B*Dinv*b;
     
     
-    vCons{1}.p1 = 1;
-    vCons{1}.p2 = 2;
+    vCons{1}.p1 = 3;
+    vCons{1}.p2 = 4;
     vCons{1}.value = 1;
     
     
-    [vC, vP, mM, vCons, delta_cams, delta_points] = calculateresidualssparse2(PTAM.KeyFrames, PTAM.Map,map,true,lambda,left1,right1,vCons,right);
+    
+    
+    
+    [vC, vP, mM, vCons, delta_cams, delta_points] = calculateresidualssparse2(PTAM.KeyFrames, PTAM.Map,map,true,lambda,left1,right1,vCons,J,r);
     
     
 
-
+    orig_delta_cams = param(1:12);
+    orig_del_cams = param(1:12);
 
 
 
