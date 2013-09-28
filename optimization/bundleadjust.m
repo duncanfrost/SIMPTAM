@@ -19,7 +19,7 @@ dp = 1;
 niter = 50;
 iter = 0;
 
-lambda = 0.0001
+lambda = 1;
 
 for i = 1:ncameras
     map{i} = generateidmap(PTAM.KeyFrames(i));
@@ -74,7 +74,7 @@ while iter < niter
     
    
     
-    %error = r'*r;
+    error = r'*r;
  
     
     
@@ -90,25 +90,25 @@ while iter < niter
     nerror = nr'*nr;
     
     
-%     rescalePTAM = applyrescale(newPTAM,World);
-% 
-%     [rr] = calculateresiduals(rescalePTAM.KeyFrames, rescalePTAM.Map, map,false);
-%     rerror = rr'*rr;
+    rescalePTAM = applyrescale(newPTAM,World);
+
+    [rr] = calculateresiduals(rescalePTAM.KeyFrames, rescalePTAM.Map, map,false);
+    rerror = rr'*rr;
     
     
     clc
     display(rescount);
     display(error);
     display(nerror);
-    %display(rerror);
+    display(rerror);
     display(iter);
     display(norm(param));
     display(lambda);
-    display(res_end);
+    %display(res_end);
 
     
-    if nerror < error
-        PTAM = newPTAM;
+    if rerror < error
+        PTAM = rescalePTAM;
         lambda = lambda * (1-0.1);
     else
         lambda = lambda * (1+0.1);

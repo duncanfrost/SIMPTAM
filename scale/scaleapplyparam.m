@@ -1,6 +1,7 @@
 function [outPTAM] = scaleapplyparam(PTAM, range,ids, param)
 
 
+
 ncameras = size(PTAM.KeyFrames,2);
 npoints = size(ids,1);
 

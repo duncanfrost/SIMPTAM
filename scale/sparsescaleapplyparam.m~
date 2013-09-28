@@ -1,0 +1,24 @@
+function [outPTAM] = sparsescaleapplyparam(PTAM, vPoints, vCameras;
+
+
+
+
+
+for j = 2:size(vCameras,2)
+    change = expmap(vCameras.delta);
+    PTAM.KeyFrames(j).Camera.E = change*PTAM.KeyFrames(j).Camera.E;
+end
+    
+
+for i = 1:size(vPoints,2)
+    PTAM.Map.points(i) = PTAM.Map.points(i) + vPoints{i}.delta
+end
+
+
+
+
+outPTAM = PTAM;
+        
+
+end
+

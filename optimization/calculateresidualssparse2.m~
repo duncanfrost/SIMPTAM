@@ -1,4 +1,4 @@
-function [vCameras, vPoints, mMeasurements, vCons, delta_cams, delta_points] = calculateresidualssparse2(KeyFrames, Map ,map,calcJ,lambda,left1,right1, vCons, J, r)
+function [vCameras, vPoints, mMeasurements, vCons, delta_cams, delta_points, error] = calculateresidualssparse2(KeyFrames, Map ,map,calcJ,lambda,left1,right1, vCons, J, r)
 %CALCULATERESIDUALS Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -29,6 +29,7 @@ end
 measCount = 0;
 
 
+error = 0;
 
 
 
@@ -64,6 +65,7 @@ for i = 1:size(KeyFrames,2)
             v = imagePoint(2);
             
             meas.err = [(u-x) (v-y)]';
+            error = error + meas.err'*meas.err;
             meas.c = i;
             meas.p = id;
             
@@ -102,6 +104,7 @@ for i = 1:size(KeyFrames,2)
             vPoints{meas.p}.eb = vPoints{meas.p}.eb + B'*meas.err;
             vPoints{meas.p}.hasConstraint = false;
             
+            
             meas.W = A'*B;
             vMeasurements{measCount} = meas;
             mMeasurements{meas.p, meas.c} = meas;
@@ -118,7 +121,7 @@ end
 
 
 
-alpha = 100;
+alpha = 0.001;
 for i = 1:size(vCons,2)
     value = vCons{i}.value;
     p1 = vCons{i}.p1;
@@ -134,7 +137,7 @@ for i = 1:size(vCons,2)
     
     
     
-    residual = (norm(N) - value)*alpha;
+    vCons{iresidual = (norm(N) - value)*alpha;
     
     
     
@@ -174,6 +177,9 @@ for i=1:size(mMeasurements,1)
     for j=1:size(mMeasurements,2)
         if ~isempty(mMeasurements{i,j})
             mMeasurements{i,j}.Y = mMeasurements{i,j}.W/vPoints{i}.Vstar;
+        else
+             mMeasurements{i,j}.W = zeros(6,3);
+             mMeasurements{i,j}.Y = mMeasurements{i,j}.W/vPoints{i}.Vstar;
         end
     end
 end
@@ -197,18 +203,23 @@ for j = 2:size(KeyFrames,2)
     for i = 1:size(vCons,2)
         p1 = vCons{i}.p1;
         p2 = vCons{i}.p2;
-        if ~isempty(mMeasurements{p1,j}) && ~isempty(mMeasurements{p2,j})
-            W = [mMeasurements{p1,j}.W mMeasurements{p2,j}.W];
+        if ~isempty(mMeasurements{p1,j}) || ~isempty(mMeasurements{p2,j})
+            if ~isempty(mMeasurements{p1,j}) && ~isempty(mMeasurements{p2,j})
+                W = [mMeasurements{p1,j}.W mMeasurements{p2,j}.W];
+            else
+                if ~isempty(mMeasurements{p1,j})
+                    W = [mMeasurements{p1,j}.W zeros(6,3)];
+                else
+                     W = [zeros(6,3) mMeasurements{p2,j}.W];
+                end
+            end
+            
+            
             Y = W/vCons{i}.Vstar;
             Eb = [vPoints{p1}.eb; vPoints{p2}.eb];
             m6 = m6 - Y*W';
             v6 = v6 - Y*Eb;
         end
-        else
-            if ~isempty(mMeasurements{p1,j})
-                
-            
-        
     end
     
     for i = 1:size(Map.points,2)
@@ -268,6 +279,15 @@ end
 
 delta_cams = S\E;
 
+vCameras{1}.delta = zeros(6,1);
+for j = 2:size(vCameras,2)
+    camStart = (j-2)*6 + 1;
+    camEnd = (j-2)*6 + 6;
+    vCameras{j}.delta = delta_cams(camStart:camEnd);
+end
+
+
+
 delta_points = zeros(3*size(Map.points,2),1);
 
 
@@ -304,9 +324,9 @@ end
 for i = 1:size(Map.points,2)
     if ~vPoints{i}.hasConstraint
         delta = vPoints{i}.eb;
-
         pointStart = (i-1)*3 + 1;
         pointEnd = (i-1)*3 + 3;
+        
         
         for j = 2:size(KeyFrames,2)
             camStart = (j-2)*6 + 1;
@@ -322,6 +342,12 @@ for i = 1:size(Map.points,2)
     
 end
 
+
+for i = 1:size(vPoints,2)
+    pointStart = (i-1)*3 + 1;
+    pointEnd = (i-1)*3 + 3;
+    vPoints{i}.delta =  delta_points(pointStart:pointEnd);  
+end
 
 
 

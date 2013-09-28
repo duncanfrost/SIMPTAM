@@ -485,13 +485,24 @@ load Constraints;
 ngtpoints = size(World.Map.points,2);
 C = zeros(ngtpoints,ngtpoints);
 
-% C = AddConstraint(C,115,166,World);
-% 
-% C = AddConstraint(C,168,200,World);
-% C = AddConstraint(C,82,110,World);
-% C = AddConstraint(C,177,198,World);
 
-C(3,4) = 1;
+nConstraints = 20;
+[ vConstraints ] = generateconstraints(PTAM, World, nConstraints);
+
+% vConstraints{1}.p1 = 1;
+% vConstraints{1}.p2 = 6;
+% vConstraints{1}.value = 1;
+% 
+% vConstraints{2}.p1 = 5;
+% vConstraints{2}.p2 = 7;
+% vConstraints{2}.value = 1;
+% 
+% vConstraints{3}.p1 = 3;
+% vConstraints{3}.p2 = 4;
+% vConstraints{3}.value = 1;
+%vConstraints = [];
+
+    
 
 
 kfcount = size(PTAM.KeyFrames,2);
@@ -499,7 +510,7 @@ kfcount = size(PTAM.KeyFrames,2);
 
 
 
-PTAM = globalscalebundleadjust(PTAM, World,kfcount,4,C);
+PTAM = globalscalebundleadjust(PTAM, World,kfcount,4,vConstraints);
 
 setappdata(handles.figure1,'ptam',PTAM);
 UpdateTick(handles);
@@ -733,6 +744,9 @@ end
 
 
 fclose(fConstraints);
+
+
+
 
 
 

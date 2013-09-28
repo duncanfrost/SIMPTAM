@@ -1,4 +1,4 @@
-function [r, J] = scalecalculateresiduals2(PTAM, range, counts, map,calcJ,ids,C)
+function [r, J] = scalecalculateresiduals2(PTAM, range, counts, map,calcJ,ids,C,alpha)
 %CALCULATERESIDUALS Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -99,7 +99,7 @@ for i = 1:size(KeyFrames,2)
 end
 row = row + 1;
 
-lambda = 100;
+lambda = alpha;
 
 N = zeros(3,1);
 for i = 1:npoints
