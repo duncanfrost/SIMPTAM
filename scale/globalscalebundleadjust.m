@@ -13,10 +13,10 @@ npoints = size(PTAM.Map.points,2);
 
 
 dp = 1;
-niter = 50;
+niter = 60;
 iter = 0;
 
-lambda = 10;
+lambda = 0.1;
 
 
 
@@ -131,7 +131,7 @@ while iter < niter
     
     
     
-    [vC, vP, mM, vCons, delta_cams, delta_points errors] = calculateresidualssparse2(PTAM.KeyFrames, PTAM.Map,map,true,lambda,left1,right1,vConstraints,J,r);
+    [vC, vP, mM, vM, vCons, delta_cams, delta_points errors] = calculateresidualssparse2(PTAM.KeyFrames, PTAM.Map,map,true,lambda,left1,right1,vConstraints,J,r);
     
     error = errors.total;
     cerror = errors.constraints;
@@ -149,7 +149,7 @@ while iter < niter
     
     newPTAM = sparsescaleapplyparam(PTAM, vC, vP);
 
-    [vC, vP, mM, vCons, delta_cams, delta_points nerrors] = calculateresidualssparse2(newPTAM.KeyFrames, newPTAM.Map,map,true,lambda,left1,right1,vConstraints,J,r);
+    [vC, vP, mM,vM, vCons, delta_cams, delta_points nerrors] = calculateresidualssparse2(newPTAM.KeyFrames, newPTAM.Map,map,true,lambda,left1,right1,vConstraints,J,r);
 
     
     

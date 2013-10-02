@@ -1,4 +1,4 @@
-function [vCameras, vPoints, mMeasurements, vCons, delta_cams, delta_points, errors] = calculateresidualssparse2(KeyFrames, Map ,map,calcJ,lambda,left1,right1, vCons, J, r)
+function [vCameras, vPoints, mMeasurements, vMeasurements, vCons, delta_cams, delta_points, errors] = calculateresidualssparse2(KeyFrames, Map ,map,calcJ,lambda,left1,right1, vCons, J, r)
 %CALCULATERESIDUALS Summary of this function goes here
 %   Detailed explanation goes here
 

@@ -2,12 +2,12 @@ function [ vConstraints ] = generateconstraints(PTAM, World, nConstraints)
 
 nPoints = size(PTAM.Map.points,2);
 usedPoints = [];
-
-
+vConstraints = [];
+s = RandStream('mt19937ar','Seed',1);
 
 for i = 1:nConstraints
-    [id1 usedPoints] = getpointid(nPoints, usedPoints);
-    [id2 usedPoints] = getpointid(nPoints, usedPoints);
+    [id1 usedPoints] = getpointid(nPoints, usedPoints,s);
+    [id2 usedPoints] = getpointid(nPoints, usedPoints,s);
     
     
     if id2 < id1
@@ -41,11 +41,11 @@ end
 end
 
 
-function [id usedPoints] = getpointid(nPoints, usedPoints)
-id = randi([1 nPoints]);
+function [id usedPoints] = getpointid(nPoints, usedPoints, stream)
+id = randi(stream,[1 nPoints]);
 
 while sum(usedPoints == id) > 0
-    id = randi([1 nPoints]);
+    id = randi(stream,[1 nPoints]);
 end
 
 usedPoints = [usedPoints id];

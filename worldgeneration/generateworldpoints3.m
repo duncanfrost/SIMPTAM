@@ -4,7 +4,7 @@ function [ points ] = generateworldpoints3(r,h)
 points = [];
 
 
-for i = 1:200
+for i = 1:20
     
     
     angle = rand*2*pi;

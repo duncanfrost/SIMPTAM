@@ -486,21 +486,18 @@ ngtpoints = size(World.Map.points,2);
 C = zeros(ngtpoints,ngtpoints);
 
 
-nConstraints = 20;
+nConstraints = 0;
 [ vConstraints ] = generateconstraints(PTAM, World, nConstraints);
 
-% vConstraints{1}.p1 = 1;
-% vConstraints{1}.p2 = 6;
-% vConstraints{1}.value = 1;
+% fConstraints = fopen('Constraints.txt','w');
 % 
-% vConstraints{2}.p1 = 5;
-% vConstraints{2}.p2 = 7;
-% vConstraints{2}.value = 1;
+% for i = 1:size(vConstraints,2)
+%     fprintf(fConstraints,'%d ',vConstraints{i}.p1);
+%     fprintf(fConstraints,'%d ',vConstraints{i}.p2);
+%     fprintf(fConstraints,'%d ',vConstraints{i}.value);
+% end
 % 
-% vConstraints{3}.p1 = 3;
-% vConstraints{3}.p2 = 4;
-% vConstraints{3}.value = 1;
-%vConstraints = [];
+% fclose(fConstraints);
 
     
 
