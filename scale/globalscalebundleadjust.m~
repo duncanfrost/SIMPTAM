@@ -13,10 +13,10 @@ npoints = size(PTAM.Map.points,2);
 
 
 dp = 1;
-niter = 50;
+niter = 20;
 iter = 0;
 
-lambda = 1;
+lambda = 0.0001;
 
 
 
@@ -73,7 +73,7 @@ display('Running...');
 
 
 
-
+alpha = 10;
 
 while iter < niter
 
@@ -82,9 +82,10 @@ while iter < niter
     
    
     %Calculate residuals and jacobian
-    tic
-    [r, J] = scalecalculateresiduals2(PTAM, range, counts, map,true,ids,C);
-    toc
+    range = [2 3];
+
+    [r, J] = scalecalculateresiduals2(PTAM, range, counts, map,true,ids,C,alpha);
+
     
     
 
@@ -129,40 +130,54 @@ while iter < niter
    
     
     
+    size(PTAM.KeyFrames,2) - 1
+    range = [size(PTAM.KeyFrames,2) - 1 3]
+    
+    %[vCameras, vPoints, mMeasurements, vCons, delta_cams, delta_points, errors1] = calculateresidualssparse2(PTAM.KeyFrames, PTAM.Map,map,true,lambda,left1,right1,vConstraints,J,r);
     
     
-    [vC, vP, mM, vCons, delta_cams, delta_points] = calculateresidualssparse2(PTAM.KeyFrames, PTAM.Map,map,true,lambda,left1,right1,vConstraints,J,r);
     
+    [vC, vAC, vP, mM, vM, vCons, delta_cams, delta_points errors] = calculateresidualssparse3(PTAM.KeyFrames, range, PTAM.Map,map,true,lambda,left1,right1,vConstraints,J,r);
     
+    error = errors.total;
+    cerror = errors.constraints;
 
-    orig_delta_cams = param(1:6*(ncameras-1));
-    orig_delta_points = param(6*(ncameras-1)+1:size(param));
-
-    cam_error = norm(orig_delta_cams-delta_cams);
-    point_error = norm(orig_delta_points-delta_points);
+%     orig_delta_cams = param(1:6*(ncameras-1));
+%     orig_delta_points = param(6*(ncameras-1)+1:size(param));
+% 
+%     cam_error = norm(orig_delta_cams-delta_cams);
+%     point_error = norm(orig_delta_points-delta_points);
 
   
     
    
     
     
-    newPTAM = scaleapplyparam(PTAM, range,ids, param);
+    newPTAM = sparsescaleapplyparam2(PTAM, vAC, vP);
 
-    [nr] = scalecalculateresiduals2(newPTAM, range, counts,map,false,ids,C);
+    
+    %[vCameras, vPoints, mMeasurements, vCons, delta_cams, delta_points, nerrors1] = calculateresidualssparse2(newPTAM.KeyFrames, newPTAM.Map,map,true,lambda,left1,right1,vConstraints,J,r);
+    
+    [vC, vAC, vP, mM,vM, vCons, delta_cams, delta_points nerrors] = calculateresidualssparse3(newPTAM.KeyFrames,range, newPTAM.Map,map,true,lambda,left1,right1,vConstraints,J,r);
+
     
     
-    nerror = nr'*nr;
+    nerror = nerrors.total;
    
 
    
     
 
     clc
-    display(cam_error);
-    display(point_error);
+%     display(cam_error);
+%     display(point_error);
     
     display(error);
+    display(errors.ba);
+    display(cerror);
     display(nerror);
+    
+    
     display(range);
     display(iter);
     %display(norm(param));
@@ -170,11 +185,11 @@ while iter < niter
     display(nconstraints);
 %     display(cres');
     display(norm(right));
-    display(baerror);
-    display(cerror);
+    %display(baerror);
+    %display(cerror);
 
 
-    PTAM = newPTAM;
+
     if nerror < error
         PTAM = newPTAM;
         lambda = lambda * (1-0.1);

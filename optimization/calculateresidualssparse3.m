@@ -1,4 +1,4 @@
-function [vCameras, vPoints, mMeasurements, vCons, delta_cams, delta_points, errors] = calculateresidualssparse2(KeyFrames, Map ,map,calcJ,lambda,left1,right1, vCons, J, r)
+function [vCameras, vActiveCameras, vPoints, mMeasurements, vMeasurements, vCons, delta_cams, delta_points, errors] = calculateresidualssparse2(KeyFrames, range, Map ,map,calcJ,lambda,left1,right1, vCons, J, r)
 %CALCULATERESIDUALS Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -14,14 +14,31 @@ K = KeyFrames(1).Camera.K;
 
 
 for i = 1:size(KeyFrames,2)
-    vCameras{i}.U = zeros(6,6);
-    vCameras{i}.ea = zeros(6,1);
+    if sum(range == i) > 0
+        vCameras{i}.active = true;
+        vCameras{i}.activeIndex = find(range==i);
+    else
+        vCameras{i}.active = false;
+        vCameras{i}.activeIndex = -1;
+    end
 end
 
 for i = 1:size(Map.points,2)
     vPoints{i}.V = zeros(3,3);
     vPoints{i}.eb = zeros(3,1);
 end
+
+
+for i = 1:size(range,2)
+    vActiveCameras{i}.c = range(i);
+    vActiveCameras{i}.U = zeros(6,6);
+    vActiveCameras{i}.ea = zeros(6,1);
+end
+
+
+
+
+
 
 
 
@@ -32,6 +49,8 @@ measCount = 0;
 errors.total = 0;
 errors.ba = 0;
 errors.constraints = 0;
+
+
 
 
 
@@ -99,9 +118,13 @@ for i = 1:size(KeyFrames,2)
             meas.A = A;
             meas.B = B;
             
-            vCameras{meas.c}.U = vCameras{meas.c}.U + A'*A;
-            vCameras{meas.c}.Ustar = vCameras{meas.c}.U + diag(diag(vCameras{meas.c}.U))*lambda;
-            vCameras{meas.c}.ea = vCameras{meas.c}.ea + A'*meas.err;
+            if vCameras{meas.c}.active
+                c = vCameras{meas.c}.activeIndex;
+                
+                vActiveCameras{c}.U = vActiveCameras{c}.U + A'*A;
+                vActiveCameras{c}.Ustar = vActiveCameras{c}.U + diag(diag(vActiveCameras{c}.U))*lambda;
+                vActiveCameras{c}.ea = vActiveCameras{c}.ea + A'*meas.err;
+            end
             vPoints{meas.p}.V = vPoints{meas.p}.V + B'*B;
             vPoints{meas.p}.Vstar = vPoints{meas.p}.V + diag(diag(vPoints{meas.p}.V))*lambda;
             vPoints{meas.p}.eb = vPoints{meas.p}.eb + B'*meas.err;
@@ -198,16 +221,14 @@ end
 
 
 %Diagonal parts of S
-S = zeros((size(KeyFrames,2)-1)*6,(size(KeyFrames,2)-1)*6);
-E = zeros((size(KeyFrames,2)-1)*6,1);
-for j = 2:size(KeyFrames,2)
-    m6 =  vCameras{j}.Ustar;
-    v6 =  vCameras{j}.ea;
+S = zeros((size(vActiveCameras,2)-1)*6,(size(vActiveCameras,2)-1)*6);
+E = zeros((size(vActiveCameras,2)-1)*6,1);
+for aj = 1:size(vActiveCameras,2)
     
-    if j == 2
-        display(m6);
-    end
-    
+    m6 =  vActiveCameras{aj}.Ustar;
+    v6 =  vActiveCameras{aj}.ea;
+    j = vActiveCameras{aj}.c;
+       
     for i = 1:size(vCons,2)
         p1 = vCons{i}.p1;
         p2 = vCons{i}.p2;
@@ -237,29 +258,28 @@ for j = 2:size(KeyFrames,2)
         end
     end
     
-    matStart = (j-2)*6 + 1;
-    matEnd = (j-2)*6 + 6;
+   
     
-     if j == 2
-        display(m6);
-    end
+    matStart = (aj-1)*6 + 1;
+    matEnd = (aj-1)*6 + 6;
     
     S(matStart:matEnd,matStart:matEnd) = m6;
     E(matStart:matEnd) = v6;
 end
 
 
-
-
 %Non-Diagonal Parts
-for j = 2:size(KeyFrames,2)
-    for k = 2:size(KeyFrames,2)
-        if j~=k
+for aj = 1:size(vActiveCameras,2)
+    for ak = 1:size(vActiveCameras,2)
+        if aj~=ak
             in = zeros(6,6);
-            jStart = (j-2)*6 + 1;
-            jEnd = (j-2)*6 + 6;
-            kStart = (k-2)*6 + 1;
-            kEnd = (k-2)*6 + 6;
+            jStart = (aj-1)*6 + 1;
+            jEnd = (aj-1)*6 + 6;
+            kStart = (ak-1)*6 + 1;
+            kEnd = (ak-1)*6 + 6;
+            
+            j = vActiveCameras{aj}.c;
+            k = vActiveCameras{ak}.c;
             
             
             for i = 1:size(vCons,2)
@@ -293,11 +313,11 @@ end
 
 delta_cams = S\E;
 
-vCameras{1}.delta = zeros(6,1);
-for j = 2:size(vCameras,2)
-    camStart = (j-2)*6 + 1;
-    camEnd = (j-2)*6 + 6;
-    vCameras{j}.delta = delta_cams(camStart:camEnd);
+
+for j = 1:size(vActiveCameras,2)
+    camStart = (j-1)*6 + 1;
+    camEnd = (j-1)*6 + 6;
+    vActiveCameras{j}.delta = delta_cams(camStart:camEnd);
 end
 
 
@@ -311,9 +331,11 @@ for i = 1:size(vCons,2)
     
     
     delta = [vPoints{p1}.eb; vPoints{p2}.eb];
-    for j = 2:size(KeyFrames,2)
-        camStart = (j-2)*6 + 1;
-        camEnd = (j-2)*6 + 6;
+    for aj = 1:size(vActiveCameras,2)
+        camStart = (aj-1)*6 + 1;
+        camEnd = (aj-1)*6 + 6;
+        j = vActiveCameras{aj}.c;
+        
         if ~isempty(mMeasurements{p1,j}) && ~isempty(mMeasurements{p2,j})
             W = [mMeasurements{p1,j}.W mMeasurements{p2,j}.W]; 
             delta = delta - W'*delta_cams(camStart:camEnd);
@@ -342,9 +364,10 @@ for i = 1:size(Map.points,2)
         pointEnd = (i-1)*3 + 3;
         
         
-        for j = 2:size(KeyFrames,2)
-            camStart = (j-2)*6 + 1;
-            camEnd = (j-2)*6 + 6;
+        for aj = 1:size(vActiveCameras,2)
+            camStart = (aj-1)*6 + 1;
+            camEnd = (aj-1)*6 + 6;
+            j = vActiveCameras{aj}.c;
             if ~isempty(mMeasurements{i,j})
                 delta = delta - mMeasurements{i,j}.W'*delta_cams(camStart:camEnd);
             end

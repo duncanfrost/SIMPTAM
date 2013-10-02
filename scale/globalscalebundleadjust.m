@@ -13,10 +13,10 @@ npoints = size(PTAM.Map.points,2);
 
 
 dp = 1;
-niter = 60;
+niter = 40;
 iter = 0;
 
-lambda = 0.1;
+lambda = 0.11;
 
 
 
@@ -82,6 +82,7 @@ while iter < niter
     
    
     %Calculate residuals and jacobian
+    range = [2 3];
 
     [r, J] = scalecalculateresiduals2(PTAM, range, counts, map,true,ids,C,alpha);
 
@@ -130,26 +131,34 @@ while iter < niter
     
     
     
+    range = [size(PTAM.KeyFrames,2)-1 size(PTAM.KeyFrames,2)];
     
-    [vC, vP, mM, vM, vCons, delta_cams, delta_points errors] = calculateresidualssparse2(PTAM.KeyFrames, PTAM.Map,map,true,lambda,left1,right1,vConstraints,J,r);
+    %[vCameras, vPoints, mMeasurements, vCons, delta_cams, delta_points, errors1] = calculateresidualssparse2(PTAM.KeyFrames, PTAM.Map,map,true,lambda,left1,right1,vConstraints,J,r);
+    
+    
+    
+    [vC, vAC, vP, mM, vM, vCons, delta_cams, delta_points errors] = calculateresidualssparse3(PTAM.KeyFrames, range, PTAM.Map,map,true,lambda,left1,right1,vConstraints,J,r);
     
     error = errors.total;
     cerror = errors.constraints;
 
-    orig_delta_cams = param(1:6*(ncameras-1));
-    orig_delta_points = param(6*(ncameras-1)+1:size(param));
-
-    cam_error = norm(orig_delta_cams-delta_cams);
-    point_error = norm(orig_delta_points-delta_points);
+%     orig_delta_cams = param(1:6*(ncameras-1));
+%     orig_delta_points = param(6*(ncameras-1)+1:size(param));
+% 
+%     cam_error = norm(orig_delta_cams-delta_cams);
+%     point_error = norm(orig_delta_points-delta_points);
 
   
     
    
     
     
-    newPTAM = sparsescaleapplyparam(PTAM, vC, vP);
+    newPTAM = sparsescaleapplyparam2(PTAM, vAC, vP);
 
-    [vC, vP, mM,vM, vCons, delta_cams, delta_points nerrors] = calculateresidualssparse2(newPTAM.KeyFrames, newPTAM.Map,map,true,lambda,left1,right1,vConstraints,J,r);
+    
+    %[vCameras, vPoints, mMeasurements, vCons, delta_cams, delta_points, nerrors1] = calculateresidualssparse2(newPTAM.KeyFrames, newPTAM.Map,map,true,lambda,left1,right1,vConstraints,J,r);
+    
+    [vC, vAC, vP, mM,vM, vCons, delta_cams, delta_points nerrors] = calculateresidualssparse3(newPTAM.KeyFrames,range, newPTAM.Map,map,true,lambda,left1,right1,vConstraints,J,r);
 
     
     
