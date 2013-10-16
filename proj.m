@@ -228,8 +228,8 @@ while PTAM.kfcount < 18
     if PTAM.run
         EstimateCamera(handles);
         AddKeyFrame(handles);
-        RunLocalScaleAdjustBA(handles);
-%     RunLocalBA(handles);
+        %RunLocalScaleAdjustBA(handles);
+        RunLocalBA(handles);
         
     end
     
@@ -272,6 +272,7 @@ if PTAM.run
     
     AddKeyFrame(handles);
     %     RunScaleAdjustBA(handles);
+    RunLocalBA(handles)
 end
 
 UpdateTick(handles);
@@ -486,7 +487,7 @@ ngtpoints = size(World.Map.points,2);
 C = zeros(ngtpoints,ngtpoints);
 
 
-nConstraints = 0;
+nConstraints = 3;
 [ vConstraints ] = generateconstraints(PTAM, World, nConstraints);
 
 % fConstraints = fopen('Constraints.txt','w');

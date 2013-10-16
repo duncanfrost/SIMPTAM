@@ -37,15 +37,15 @@ for i = 1:size(KeyFrames,2)
             Z = pointCamera(3);
             x = X/Z;
             y = Y/Z;
-            pix = K*[x y 1]';
-            x = pix(1);
-            y = pix(2);
+%             pix = K*[x y 1]';
+%             x = pix(1);
+%             y = pix(2);
+%             
             
             
             
             
-            
-            %imagePoint = imagePoint;
+            imagePoint = K\imagePoint;
             
             u = imagePoint(1);
             v = imagePoint(2);

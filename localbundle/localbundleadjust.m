@@ -23,7 +23,7 @@ dp = 1;
 niter = 20;
 iter = 0;
 
-lambda = 0.00000000001;
+lambda = 0.0011;
 
 for i = 1:ncameras
     map{i} = generateidmap(PTAM.KeyFrames(i));

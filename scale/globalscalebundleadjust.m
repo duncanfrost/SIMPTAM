@@ -16,7 +16,7 @@ dp = 1;
 niter = 40;
 iter = 0;
 
-lambda = 0.11;
+lambda = 0.1;
 
 
 
